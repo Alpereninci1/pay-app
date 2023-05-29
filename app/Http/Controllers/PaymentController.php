@@ -29,12 +29,7 @@ class PaymentController extends Controller
             $responseData = json_decode($response->getBody(), true);
             $this->token = $responseData['data']['token'];
             if ($responseData['status_code'] === 100) {
-                return response()->json(
-                    [
-                        'message' => 'Token alındı.',
-                        'data' => $responseData
-                    ]
-                );
+                return redirect()->route('payment.intermediate')->with('token', $this->token);
             } else {
                 return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $responseData['error_code']]);
             }
@@ -43,6 +38,19 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Token alırken bir hata oluştu: ' . $e->getMessage()]);
         }
 
+    }
+
+    public function mainPage()
+    {
+        return view('main');
+    }
+
+    public function intermediate()
+    {
+        $this->getToken();
+        $tokenValue = $this->token;
+
+        return view('intermediate',['token' => $tokenValue]);
     }
     public function processPayment3d(Request $request)
     {
