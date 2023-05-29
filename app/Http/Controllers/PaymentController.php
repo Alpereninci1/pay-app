@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use GuzzleHttp\Client;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
@@ -49,22 +51,14 @@ class PaymentController extends Controller
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
-        $filePath = 'storage/app/products.json';
-        $jsonData = Storage::get($filePath);
+        $filePath = "products.json";
 
-        $items = json_decode($jsonData,true);
+        $json = Storage::get($filePath);
 
-        dd($items);
-
-        foreach ($items['products'] as $item)
-        {
-            $productId = $item['id'];
-            $productName = $item['name'];
-            $productPrice = $item['price'];
-
-            echo "Ürün ID: " . $productId . "<br>";
-            echo "Ürün Adı: " . $productName . "<br>";
-            echo "Ürün Fiyatı: " . $productPrice . "<br>";
+        $items = json_decode($json, true);
+        $products = '';
+        foreach ($items as $item){
+            $products = $item;
         }
 
         $ccHolderName = $request->input('cc_holder_name');
@@ -75,15 +69,15 @@ class PaymentController extends Controller
         $installmentsNumber = $request->input('installments_number');
         $invoiceId = $request->input('invoice_id');
         $invoiceDescription = $request->input('invoice_description');
-        $total = $request->input('request');
+        $total = $request->input('total');
         $merchantKey = $request->input('merchant_key');
-        $name = $request->input('request');
+        $name = $request->input('name');
         $surname = $request->input('surname');
         $hashKey = $request->input('hash_key');
         $returnUrl = $request->input('return_url');
         $cancelUrl = $request->input('cancel_url');
-        $client = new Client();
 
+        $client = new Client();
         try {
             $response = $client->post($apiUrl, [
                 'form_params' => [
@@ -102,25 +96,149 @@ class PaymentController extends Controller
                     'hash_key' => $hashKey,
                     'return_url' => $returnUrl,
                     'cancel_url' => $cancelUrl,
-                    'items' => $items
+                    'items' => $products,
+                ],
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
-
-            // Banka API'sinden dönen yanıtı al
-            $responseData = json_decode($response->getBody(), true);
-
-            // Ödeme başarılıysa
-            if ($responseData['status'] === 'success') {
-                // Kullanıcıya ürünü ver veya işlemleri tamamlayın
-                // Örneğin, kullanıcıya indirme bağlantısı gönderin veya ürünü veritabanında işaretleme yapın
-
-                return response()->json(['message' => 'Ödeme başarıyla tamamlandı. Ürün verildi.']);
+            if ($response->getStatusCode() === 200) {
+                return view('payment_result', ['payment_result' => $response->getBody()]);
             } else {
-                return response()->json(['message' => 'Ödeme işlemi başarısız. Hata kodu: ' . $responseData['error_code']]);
+                return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
         } catch (\Exception $e) {
             // İstek sırasında bir hata oluşursa
             return response()->json(['message' => 'Ödeme işlemi sırasında bir hata oluştu: ' . $e->getMessage()]);
+        }
+    }
+
+    public function processPayment2d(Request $request)
+    {
+
+        $this->getToken();
+
+        $tokenValue = $this->token;
+
+        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart2D';
+
+        $filePath = "products.json";
+
+        $json = Storage::get($filePath);
+
+        $items = json_decode($json, true);
+        $products = '';
+        foreach ($items as $item){
+            $products = $item;
+        }
+
+        $client = new Client();
+        $rawData = $request->getContent();
+        $dataArray = json_decode($rawData, true);
+        $dataArray['items'] = $products;
+        $jsonData = json_encode($dataArray);
+        try {
+            $response = $client->post($apiUrl, [
+                'body' => $jsonData,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenValue,
+                ]
+            ]);
+            if($response->getStatusCode() === 200) {
+                $responseData = json_decode($response->getBody(),true);
+                return $responseData;
+            } else {
+                return response()->json(['message' => 'Ödeme işlemi başarısız.']);
+            }
+        } catch (\Exception $e) {
+            // İstek sırasında bir hata oluşursa
+            return response()->json(['message' => 'Ödeme işlemi sırasında bir hata oluştu: ' . $e->getMessage()]);
+        }
+    }
+
+    public function getInstallment(Request $request)
+    {
+
+        $this->getToken();
+        $tokenValue = $this->token;
+        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/installments';
+        $client = new Client();
+        $rawData = $request->getContent();
+
+        try {
+            $response = $client->post($apiUrl,[
+                'body' => $rawData,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenValue,
+                ]
+            ]);
+            if($response->getStatusCode() === 200) {
+                $responseData = json_decode($response->getBody(),true);
+                return $responseData;
+            }else {
+                return response()->json(['message' => 'İşlemi başarısız.']);
+            }
+        }catch (\Exception $e){
+            return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
+        }
+    }
+
+    public function getPos(Request $request)
+    {
+
+        $this->getToken();
+        $tokenValue = $this->token;
+        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
+        $client = new Client();
+        $rawData = $request->getContent();
+
+        try {
+            $response = $client->post($apiUrl,[
+                'body' => $rawData,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenValue,
+                ]
+            ]);
+            if($response->getStatusCode() === 200) {
+                $responseData = json_decode($response->getBody(),true);
+                return $responseData;
+            }else {
+                return response()->json(['message' => 'İşlem başarısız.']);
+            }
+        }catch (\Exception $e){
+            return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
+        }
+    }
+
+    public function payByCardTokenNonSecure(Request $request)
+    {
+
+        $this->getToken();
+        $tokenValue = $this->token;
+        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/payByCardTokenNonSecure';
+        $client = new Client();
+        $rawData = $request->getContent();
+
+        try {
+            $response = $client->post($apiUrl,[
+                'body' => $rawData,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $tokenValue,
+                ]
+            ]);
+            if($response->getStatusCode() === 200) {
+                $responseData = json_decode($response->getBody(),true);
+                return $responseData;
+            }else {
+                return response()->json(['message' => 'İşlem başarısız.']);
+            }
+        }catch (\Exception $e){
+            return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
         }
     }
 }

@@ -20,3 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('getToken',[\App\Http\Controllers\PaymentController::class,'getToken']);
 Route::post('payment3D',[\App\Http\Controllers\PaymentController::class,'processPayment3d']);
+Route::post('payment2D',[\App\Http\Controllers\PaymentController::class,'processPayment2d']);
+Route::post('get-installments',[\App\Http\Controllers\PaymentController::class,'getInstallment']);
+Route::post('get-pos',[\App\Http\Controllers\PaymentController::class,'getPos']);
+Route::post('payByCardTokenNonSecure',[\App\Http\Controllers\PaymentController::class,'payByCardTokenNonSecure']);
