@@ -78,7 +78,7 @@ class PaymentController extends Controller
         $invoiceId = $request->input('invoice_id');
         $invoiceDescription = $request->input('invoice_description');
         $total = $request->input('total');
-        $merchantKey = $request->input('merchant_key');
+        $merchantKey = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
         $name = $request->input('name');
         $surname = $request->input('surname');
         $hashKey = $request->input('hash_key');
@@ -260,4 +260,13 @@ class PaymentController extends Controller
         return view('get-pos-view');
     }
 
+    public function payment3DView()
+    {
+        return view('payment3d-view');
+    }
+
+    public function payment2DView()
+    {
+        return view('payment2d-view');
+    }
 }
