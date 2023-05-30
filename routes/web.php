@@ -22,3 +22,6 @@ Route::post('payment3D',[\App\Http\Controllers\PaymentController::class,'process
 Route::post('payment2D',[\App\Http\Controllers\PaymentController::class,'processPayment2d'])->name('payment.payment-2d');
 Route::get('/payment/main', [\App\Http\Controllers\PaymentController::class, 'mainPage'])->name('payment.main');
 Route::get('/payment/get-token', [\App\Http\Controllers\PaymentController::class, 'getToken'])->name('payment.get-token');
+Route::get('/payment/get-installment', [\App\Http\Controllers\PaymentController::class, 'getInstallment'])->name('payment.get-installment');
+Route::post('/get-pos',[\App\Http\Controllers\PaymentController::class,'getPos'])->name('payment.get-pos');
+Route::get('get-pos-view',[\App\Http\Controllers\PaymentController::class,'getPosView'])->name('payment.get-pos-view');

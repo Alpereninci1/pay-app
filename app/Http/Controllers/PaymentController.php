@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
-    private $token = null;
-    public function getToken()
+    public function getToken(Request $request)
     {
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/token';
 
@@ -27,9 +28,12 @@ class PaymentController extends Controller
                 ]
             ]);
             $responseData = json_decode($response->getBody(), true);
-            $this->token = $responseData['data']['token'];
+            $token = $responseData['data']['token'];
             if ($responseData['status_code'] === 100) {
-                return redirect()->route('payment.intermediate')->with('token', $this->token);
+                $expiration = Carbon::now()->addHours(2); // Token süresi 2 saat
+                Session::put('token', $token);
+                Session::put('token_expiration', $expiration);
+                return redirect()->route('payment.intermediate');
             } else {
                 return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $responseData['error_code']]);
             }
@@ -45,17 +49,13 @@ class PaymentController extends Controller
         return view('main');
     }
 
-    public function intermediate()
+    public function intermediate(Request $request)
     {
-        $this->getToken();
-        $tokenValue = $this->token;
-
-        return view('intermediate',['token' => $tokenValue]);
+        return view('intermediate',['token' => Session::get('token')]);
     }
     public function processPayment3d(Request $request)
     {
-        $this->getToken();
-        $tokenValue = $this->token;
+        $tokenValue = Session::get('token');
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
@@ -124,10 +124,7 @@ class PaymentController extends Controller
 
     public function processPayment2d(Request $request)
     {
-
-        $this->getToken();
-
-        $tokenValue = $this->token;
+        $tokenValue = Session::get('token');
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart2D';
 
@@ -168,16 +165,16 @@ class PaymentController extends Controller
 
     public function getInstallment(Request $request)
     {
+        $tokenValue = Session::get('token');
 
-        $this->getToken();
-        $tokenValue = $this->token;
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/installments';
         $client = new Client();
-        $rawData = $request->getContent();
-
+        $merchant_key = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
         try {
             $response = $client->post($apiUrl,[
-                'body' => $rawData,
+                'json' => [
+                    'merchant_key' => $merchant_key
+                ],
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $tokenValue,
@@ -185,7 +182,7 @@ class PaymentController extends Controller
             ]);
             if($response->getStatusCode() === 200) {
                 $responseData = json_decode($response->getBody(),true);
-                return $responseData;
+                return view('installment',['response_data' => $response->getBody()]);
             }else {
                 return response()->json(['message' => 'İşlemi başarısız.']);
             }
@@ -197,23 +194,32 @@ class PaymentController extends Controller
     public function getPos(Request $request)
     {
 
-        $this->getToken();
-        $tokenValue = $this->token;
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
-        $rawData = $request->getContent();
+
+        $credit_card = $request->input('credit_card');
+        $amount = $request->input('amount');
+        $currency_code = 'TRY';
+        $is_2d = $request->input('is_2d');
+        $merchant_key = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
 
         try {
             $response = $client->post($apiUrl,[
-                'body' => $rawData,
+                'json' => [
+                    'credit_card' => $credit_card,
+                    'amount' => $amount,
+                    'currency_code' => $currency_code,
+                    'merchant_key' => $merchant_key,
+                    'is_2d' => $is_2d
+                ],
                 'headers' => [
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $tokenValue,
+                    'Authorization' => 'Bearer ' . Session::get('token'),
                 ]
             ]);
             if($response->getStatusCode() === 200) {
                 $responseData = json_decode($response->getBody(),true);
-                return $responseData;
+                return view('get-pos-result',['response_data' => $response->getBody()]);
             }else {
                 return response()->json(['message' => 'İşlem başarısız.']);
             }
@@ -224,9 +230,8 @@ class PaymentController extends Controller
 
     public function payByCardTokenNonSecure(Request $request)
     {
+        $request->session()->get('token');
 
-        $this->getToken();
-        $tokenValue = $this->token;
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/payByCardTokenNonSecure';
         $client = new Client();
         $rawData = $request->getContent();
@@ -249,4 +254,10 @@ class PaymentController extends Controller
             return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
         }
     }
+
+    public function getPosView()
+    {
+        return view('get-pos-view');
+    }
+
 }

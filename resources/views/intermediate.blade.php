@@ -9,6 +9,9 @@
     <p>Hata: {{ session('error') }}</p>
 @endif
 
-<p>Lütfen ödeme yöntemini seçin:</p>
+<p>Lütfen yapılacak işlemi seçin:</p>
 <a href="{{ route('payment.payment-3d') }}">3D Ödeme</a>
 <a href="{{ route('payment.payment-2d') }}">2D Ödeme</a>
+<a href="{{ route('payment.get-installment') }}">Get Installment</a>
+<a href="{{ route('payment.get-pos-view') }}">Get Pos</a>
+
