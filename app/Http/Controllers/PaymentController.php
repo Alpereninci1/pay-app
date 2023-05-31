@@ -19,8 +19,8 @@ class PaymentController extends Controller
     {
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/token';
 
-        $app_id = 'c3d81ae3cc3011ef10dcefa31a458d65';
-        $app_secret = '217071ea9f3f2e9b695d8f0039024e64';
+        $app_id = Config::get('app.app_id');
+        $app_secret = Config::get('app.app_secret');
         $client = new Client();
 
         try {
@@ -47,15 +47,6 @@ class PaymentController extends Controller
 
     }
 
-    public function mainPage()
-    {
-        return view('main');
-    }
-
-    public function intermediate(Request $request)
-    {
-        return view('intermediate',['token' => Session::get('token')]);
-    }
     public function processPayment3d(Request $request)
     {
         $tokenValue = Session::get('token');
@@ -236,15 +227,31 @@ class PaymentController extends Controller
 
     public function payByCardTokenNonSecure(Request $request)
     {
-        $request->session()->get('token');
-
+        $tokenValue = Session::get('token');
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/payByCardTokenNonSecure';
+        $filePath = "products.json";
+
+        $json = Storage::get($filePath);
+
+        $items = json_decode($json, true);
+        $products = '';
+        foreach ($items as $item){
+            $products = $item;
+        }
+
         $client = new Client();
         $rawData = $request->getContent();
+        $dataArray = json_decode($rawData, true);
+        $merchant_key = Config::get('app.merchant_key');
+        $dataArray['merchant_key'] = $merchant_key;
+        $dataArray['hash_key'] = HashGeneratorHelper::hashGenerator();
+        $dataArray['invoice_id'] = Session::get('invoice_id');
+        $dataArray['items'] = $products;
+        $jsonData = json_encode($dataArray);
 
         try {
             $response = $client->post($apiUrl,[
-                'body' => $rawData,
+                'body' => $jsonData,
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $tokenValue,
@@ -274,5 +281,19 @@ class PaymentController extends Controller
     public function payment2DView()
     {
         return view('payment2d-view');
+    }
+
+    public function mainPage()
+    {
+        return view('main');
+    }
+    public function intermediate(Request $request)
+    {
+        return view('intermediate',['token' => Session::get('token')]);
+    }
+
+    public function payByCardTokenView()
+    {
+        return view('paybycardtoken-view');
     }
 }

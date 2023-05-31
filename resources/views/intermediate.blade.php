@@ -14,4 +14,6 @@
 <a href="{{ route('payment.payment-2d-view') }}">2D Ödeme</a>
 <a href="{{ route('payment.get-installment') }}">Get Installment</a>
 <a href="{{ route('payment.get-pos-view') }}">Get Pos</a>
+<a href="{{ route('payment.pay-by-card-token-view') }}">Pay By Card Token</a>
+
 

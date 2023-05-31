@@ -125,6 +125,8 @@ return [
     'key' => env('APP_KEY'),
 
     'merchant_key' => env('MERCHANT_KEY'),
+    'app_id' => env('APP_ID'),
+    'app_secret' => env('APP_SECRET'),
 
     'cipher' => 'AES-256-CBC',
 
