@@ -12,6 +12,7 @@ class HashGeneratorHelper{
         $currency_code = 'TRY';
         $merchant_key = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
         $invoice_id = rand(0,10000);
+        //$invoice_id = "234252321312422342344";
         $app_secret = '217071ea9f3f2e9b695d8f0039024e64';
         $data = $total . '|' . $installment . '|' . $currency_code . '|' . $merchant_key . '|' . $invoice_id;
 

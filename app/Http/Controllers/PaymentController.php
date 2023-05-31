@@ -58,10 +58,29 @@ class PaymentController extends Controller
         $json = Storage::get($filePath);
 
         $items = json_decode($json, true);
-        $products = '';
+
+        //dd($items);
+        /*$products = '';
         foreach ($items as $item){
             $products = $item;
+        }*/
+
+        $products = [];
+
+
+
+        foreach ($items['products'] as $item) {
+            $obj = new \stdClass();
+            $obj->price = $item['price'];
+            $obj->name = $item['name'];
+            $obj->description = $item['description'];
+            $obj->quantity = $item['quantity'];
+
+            $products[] = $obj;
         }
+
+//dd($products);
+
         $ccHolderName = $request->input('cc_holder_name');
         $ccNo = $request->input('cc_no');
         $expiryMonth = $request->input('expiry_month');
@@ -75,6 +94,7 @@ class PaymentController extends Controller
         $surname = $request->input('surname');
         $hashKey = HashGeneratorHelper::hashGenerator();
         $invoiceId = Session::get('invoice_id');
+        //$invoiceId = "234252321312422342344";
         $returnUrl = $request->input('return_url');
         $cancelUrl = $request->input('cancel_url');
 
@@ -100,12 +120,15 @@ class PaymentController extends Controller
                     'items' => $products,
                 ],
                 'headers' => [
+                    //'Content-Type' => 'multipart/form-data',
                     'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
+            //dd($products);
             if ($response->getStatusCode() === 200) {
-                $view = View::make('payment_result')->with('responseHtml', $response->getBody());
-                return $view;
+                return $response->getBody();
+//                $view = View::make('payment_result')->with('responseHtml', $response->getBody());
+//                return $view;
             } else {
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
