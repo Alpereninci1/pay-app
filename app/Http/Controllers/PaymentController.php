@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\HashGeneratorHelper;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 
 class PaymentController extends Controller
 {
@@ -68,20 +71,19 @@ class PaymentController extends Controller
         foreach ($items as $item){
             $products = $item;
         }
-
         $ccHolderName = $request->input('cc_holder_name');
         $ccNo = $request->input('cc_no');
         $expiryMonth = $request->input('expiry_month');
         $expiryYear = $request->input('expiry_year');
         $currencyCode = $request->input('currency_code');
         $installmentsNumber = $request->input('installments_number');
-        $invoiceId = $request->input('invoice_id');
         $invoiceDescription = $request->input('invoice_description');
         $total = $request->input('total');
-        $merchantKey = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
+        $merchantKey = Config::get('app.merchant_key');
         $name = $request->input('name');
         $surname = $request->input('surname');
-        $hashKey = $request->input('hash_key');
+        $hashKey = HashGeneratorHelper::hashGenerator();
+        $invoiceId = Session::get('invoice_id');
         $returnUrl = $request->input('return_url');
         $cancelUrl = $request->input('cancel_url');
 
@@ -107,12 +109,12 @@ class PaymentController extends Controller
                     'items' => $products,
                 ],
                 'headers' => [
-                    'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
-                return view('payment_result', ['payment_result' => $response->getBody()]);
+                $view = View::make('payment_result')->with('responseHtml', $response->getBody());
+                return $view;
             } else {
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
@@ -141,6 +143,10 @@ class PaymentController extends Controller
         $client = new Client();
         $rawData = $request->getContent();
         $dataArray = json_decode($rawData, true);
+        $merchant_key = Config::get('app.merchant_key');
+        $dataArray['merchant_key'] = $merchant_key;
+        $dataArray['hash_key'] = HashGeneratorHelper::hashGenerator();
+        $dataArray['invoice_id'] = Session::get('invoice_id');
         $dataArray['items'] = $products;
         $jsonData = json_encode($dataArray);
         try {
@@ -153,7 +159,7 @@ class PaymentController extends Controller
             ]);
             if($response->getStatusCode() === 200) {
                 $responseData = json_decode($response->getBody(),true);
-                return $responseData;
+                return response()->json($responseData);
             } else {
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
@@ -169,7 +175,7 @@ class PaymentController extends Controller
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/installments';
         $client = new Client();
-        $merchant_key = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
+        $merchant_key = Config::get('app.merchant_key');
         try {
             $response = $client->post($apiUrl,[
                 'json' => [
@@ -201,7 +207,7 @@ class PaymentController extends Controller
         $amount = $request->input('amount');
         $currency_code = 'TRY';
         $is_2d = $request->input('is_2d');
-        $merchant_key = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
+        $merchant_key = Config::get('app.merchant_key');
 
         try {
             $response = $client->post($apiUrl,[

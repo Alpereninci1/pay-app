@@ -26,10 +26,6 @@
             <input type="text" class="form-control" name="installments_number">
         </div>
         <div class="form-group">
-            <label>Invoice Id</label>
-            <input type="text" class="form-control" name="invoice_id">
-        </div>
-        <div class="form-group">
             <label>Invoice Description</label>
             <input type="text" class="form-control" name="invoice_description">
         </div>
@@ -44,10 +40,6 @@
         <div class="form-group">
             <label>Surname</label>
             <input type="text" class="form-control" name="surname">
-        </div>
-        <div class="form-group">
-            <label>Hash Key</label>
-            <input type="text" class="form-control" name="hash_key">
         </div>
         <div class="form-group">
             <label>Return Url</label>

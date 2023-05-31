@@ -124,6 +124,8 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'merchant_key' => env('MERCHANT_KEY'),
+
     'cipher' => 'AES-256-CBC',
 
     /*
@@ -183,6 +185,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
+        'Helper' => App\Helpers\HashGeneratorHelper::class,
     ])->toArray(),
 
 ];

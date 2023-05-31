@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Installments</title>
+    <title>Response Data</title>
 </head>
 <body>
-<h1>Installments</h1>
+<h1>Response Data</h1>
 <p>{{ $response_data }}</p>
 <!-- İstenilen diğer bilgileri ekleyebilirsiniz -->
 </body>

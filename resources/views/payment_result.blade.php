@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Ödeme Sonucu</title>
+    <meta charset="UTF-8">
+    <title>Response</title>
 </head>
 <body>
-<h1>Ödeme Sonucu</h1>
-<p>{{ $payment_result }}</p>
-<!-- İstenilen diğer bilgileri ekleyebilirsiniz -->
+{!! $responseHtml !!}
 </body>
 </html>

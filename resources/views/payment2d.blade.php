@@ -1,5 +1,7 @@
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
 <form id="myForm">
-    @csrf
     <div class="form-group">
         <label>Card Name</label>
         <input type="text" name="cc_holder_name" id="cc_holder_name">
@@ -26,11 +28,7 @@
     </div>
     <div class="form-group">
         <label>Installment Number</label>
-        <input type="text" name="installments_number" id="installments_number">
-    </div>
-    <div class="form-group">
-        <label>Invoice Id</label>
-        <input type="text" name="invoice_id" id="invoice_id">
+        <input type="number" name="installments_number" id="installments_number">
     </div>
     <div class="form-group">
         <label>Invoice Description</label>
@@ -41,10 +39,6 @@
         <input type="text" name="total" id="total">
     </div>
     <div class="form-group">
-        <label>Merchant Key</label>
-        <input type="text" name="merchant_key" id="merchant_key">
-    </div>
-    <div class="form-group">
         <label>Name</label>
         <input type="text" name="name" id="name">
     </div>
@@ -52,13 +46,12 @@
         <label>Surname</label>
         <input type="text" name="surname" id="surname">
     </div>
-    <div class="form-group">
-        <label>Hash Key</label>
-        <input type="text" name="hash_key" id="hash_key">
-    </div>
-
     <button type="button" id="submitBtn">Submit</button>
 </form>
+
+<div id="result">
+
+</div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -73,14 +66,11 @@
                 expiry_year: $('#expiry_year').val(),
                 cvv: $('#cvv').val(),
                 currency_code :$('#currency_code').val(),
-                installment_numbers :$('#installments_number').val(),
-                invoice_id: $('#invoice_id').val(),
+                installments_number :$('#installments_number').val(),
                 invoice_description: $('#invoice_description').val(),
                 total: $('#total').val(),
-                merchant_key: $('#merchant_key').val(),
                 name: $('#name').val(),
                 surname: $('#surname').val(),
-                hash_key: $('#hash_key').val()
             };
 
             var csrfToken = $('meta[name="csrf-token"]').attr('content');
@@ -101,7 +91,11 @@
                 },
                 success: function(response) {
                     // Handle the response from the controller
-                    console.log(response);
+                    var resultHtml = '<p>Status Code: ' + response.status_code + '</p>' +
+                        '<p>Status Description: ' + response.status_description + '</p>' +
+                        '<p>Invoice ID: ' + response.data.invoice_id + '</p>' +
+                        '<p>Order No: ' + response.data.order_no + '</p>';
+                    $('#result').html(resultHtml);
                 },
                 error: function(xhr, status, error) {
                     // Handle errors
