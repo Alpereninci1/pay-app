@@ -59,15 +59,7 @@ class PaymentController extends Controller
 
         $items = json_decode($json, true);
 
-        //dd($items);
-        /*$products = '';
-        foreach ($items as $item){
-            $products = $item;
-        }*/
-
         $products = [];
-
-
 
         foreach ($items['products'] as $item) {
             $obj = new \stdClass();
@@ -79,24 +71,22 @@ class PaymentController extends Controller
             $products[] = $obj;
         }
 
-//dd($products);
 
         $ccHolderName = $request->input('cc_holder_name');
         $ccNo = $request->input('cc_no');
         $expiryMonth = $request->input('expiry_month');
         $expiryYear = $request->input('expiry_year');
-        $currencyCode = $request->input('currency_code');
+        $currencyCode = Config::get('app.invoice_description');
         $installmentsNumber = $request->input('installments_number');
-        $invoiceDescription = $request->input('invoice_description');
-        $total = $request->input('total');
+        $invoiceDescription = Config::get('app.invoice_description');
+        $total = Config::get('app.total');
         $merchantKey = Config::get('app.merchant_key');
-        $name = $request->input('name');
-        $surname = $request->input('surname');
+        $name = Config::get('app._name');
+        $surname = Config::get('app.surname');
         $hashKey = HashGeneratorHelper::hashGenerator();
         $invoiceId = Session::get('invoice_id');
-        //$invoiceId = "234252321312422342344";
-        $returnUrl = $request->input('return_url');
-        $cancelUrl = $request->input('cancel_url');
+        $returnUrl = Config::get('app.return_url');
+        $cancelUrl = Config::get('app.cancel_url');
 
         $client = new Client();
         try {
@@ -124,7 +114,6 @@ class PaymentController extends Controller
                     'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
-            //dd($products);
             if ($response->getStatusCode() === 200) {
                 return $response->getBody();
 //                $view = View::make('payment_result')->with('responseHtml', $response->getBody());
@@ -158,7 +147,17 @@ class PaymentController extends Controller
         $rawData = $request->getContent();
         $dataArray = json_decode($rawData, true);
         $merchant_key = Config::get('app.merchant_key');
+        $currency_code = Config::get('app.currency_code');
+        $invoice_description = Config::get('app.invoice_description');
+        $total = Config::get('app.total');
+        $name = Config::get('app.name');
+        $surname = Config::get('app.surname');
         $dataArray['merchant_key'] = $merchant_key;
+        $dataArray['currency_code'] = $currency_code;
+        $dataArray['invoice_description'] = $invoice_description;
+        $dataArray['total'] = $total;
+        $dataArray['name'] = $name;
+        $dataArray['surname'] = $surname;
         $dataArray['hash_key'] = HashGeneratorHelper::hashGenerator();
         $dataArray['invoice_id'] = Session::get('invoice_id');
         $dataArray['items'] = $products;
@@ -318,5 +317,10 @@ class PaymentController extends Controller
     public function payByCardTokenView()
     {
         return view('paybycardtoken-view');
+    }
+
+    public function index()
+    {
+        return view('index');
     }
 }

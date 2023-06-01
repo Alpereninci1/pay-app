@@ -28,4 +28,5 @@ Route::get('/payment/get-installment', [\App\Http\Controllers\PaymentController:
 Route::post('/get-pos',[\App\Http\Controllers\PaymentController::class,'getPos'])->name('payment.get-pos');
 Route::get('get-pos-view',[\App\Http\Controllers\PaymentController::class,'getPosView'])->name('payment.get-pos-view');
 Route::post('paymentCardToken',[\App\Http\Controllers\PaymentController::class,'payByCardTokenNonSecure'])->name('payment.pay-by-card-token');
-Route::GET('paymentCardToken-view',[\App\Http\Controllers\PaymentController::class,'payByCardTokenView'])->name('payment.pay-by-card-token-view');
+Route::get('paymentCardToken-view',[\App\Http\Controllers\PaymentController::class,'payByCardTokenView'])->name('payment.pay-by-card-token-view');
+Route::get('index',[\App\Http\Controllers\PaymentController::class,'index'])->name('payment.index');

@@ -127,7 +127,13 @@ return [
     'merchant_key' => env('MERCHANT_KEY'),
     'app_id' => env('APP_ID'),
     'app_secret' => env('APP_SECRET'),
-
+    'currency_code' => env('CURRENCY_CODE'),
+    'invoice_description' => env('INVOICE_DESCRIPTION'),
+    '_name' => env('NAME'),
+    'surname' => env('SURNAME'),
+    'return_url' => env('RETURN_URL'),
+    'cancel_url' => env('CANCEL_URL'),
+    'total' => env('TOTAL'),
     'cipher' => 'AES-256-CBC',
 
     /*

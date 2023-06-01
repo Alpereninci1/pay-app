@@ -1,47 +1,42 @@
-@{
-ViewData["Title"] = "View";
-}
+@extends('layouts.app')
+@section('Styles')
+    <style>
+        .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+            background-color: #6bba9b;
+        }
 
-@section Styles {
-<style>
-    .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-        background-color: #6bba9b;
-    }
+        #progress {
+            width: 21%;
+            background-color: #6bba9b;
+        }
 
-    #progress {
-        width: 21%;
-        background-color: #6bba9b
-    }
+        .table-bordered>thead>tr>th, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>tbody>tr>td, .table-bordered>tfoot>tr>td {
+            border: 1px solid #6bba9b;
+        }
 
-    .table-bordered>thead>tr>th, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>tbody>tr>td, .table-bordered>tfoot>tr>td {
-        border: 1px solid #6bba9b;
-    }
+        tbody, td, tfoot, th, thead, tr {
+            border-color: #6bba9b;
+            border-style: inherit;
+            border-width: 0;
+        }
 
-    tbody, td, tfoot, th, thead, tr {
-        border-color: #6bba9b;
-        border-style: inherit;
-        border-width: 0;
-    }
+        .table>thead>tr>th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #6bba9b;
+        }
 
-    .table>thead>tr>th {
-        vertical-align: bottom;
-        border-bottom: 2px solid #6bba9b;
-    }
-
-    .table>:not(:last-child)>:last-child>* {
-        border-bottom-color: #6bba9b;
-    }
-</style>
-}
+        .table>:not(:last-child)>:last-child>* {
+            border-bottom-color: #6bba9b;
+        }
+    </style>
+@endsection
 
 <div class="image-container set-full-height">
 
-    <!--   Big container   -->
     <div class="container">
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2">
 
-                <!--      Wizard container        -->
                 <div class="wizard-container">
 
                     <div class="card wizard-card" data-color="orange" id="wizardProfile">
@@ -172,101 +167,102 @@ ViewData["Title"] = "View";
     </div> <!--  big container -->
 </div>
 
-@section Scripts {
+{{--@section('scripts') {--}}
 
-<script type="text/javascript">
+{{--<script type="text/javascript">--}}
 
-    $("#ThreeDSecure").val(1);
-    $("#ThreeDSecure").change(function () {
-        if (this.checked) {
-            $("#ThreeDSecure").val(1);
-        }
-        else {
-            $("#ThreeDSecure").val(0);
-        }
-    });
+{{--    $("#ThreeDSecure").val(1);--}}
+{{--    $("#ThreeDSecure").change(function () {--}}
+{{--        if (this.checked) {--}}
+{{--            $("#ThreeDSecure").val(1);--}}
+{{--        }--}}
+{{--        else {--}}
+{{--            $("#ThreeDSecure").val(0);--}}
+{{--        }--}}
+{{--    });--}}
 
-    var checked = false;
-    var bin =null;
-    $('#CardNumber').keyup(function(){
+{{--    var checked = false;--}}
+{{--    var bin =null;--}}
+{{--    $('#CardNumber').keyup(function(){--}}
 
-        if ($("#CardNumber").val().length < 6) {
-            $("#installment_table").html('');
-            checked=false;
-        }
+{{--        if ($("#CardNumber").val().length < 6) {--}}
+{{--            $("#installment_table").html('');--}}
+{{--            checked=false;--}}
+{{--        }--}}
 
-        if ($("#CardNumber").val().length >= 6){
-            if(!checked || bin != $("#CardNumber").val().substring(0,6)){
-                bin = $("#CardNumber").val().substring(0, 6);
-                getPosInstallments();
+{{--        if ($("#CardNumber").val().length >= 6){--}}
+{{--            if(!checked || bin != $("#CardNumber").val().substring(0,6)){--}}
+{{--                bin = $("#CardNumber").val().substring(0, 6);--}}
+{{--                getPosInstallments();--}}
 
-                checked=true;
-            }
-        }
-    });
+{{--                checked=true;--}}
+{{--            }--}}
+{{--        }--}}
+{{--    });--}}
 
-    $('#amount').change(function () {
+{{--    $('#amount').change(function () {--}}
 
-        if ($("#amount").val() == 0) {
-            $("#installment_table").html('');
-        }
-        if ($("#amount").val() != 0 && $("#CardNumber").val().length >= 6) {
-            console.log("1");
-            getPosInstallments();
-        }
+{{--        if ($("#amount").val() == 0) {--}}
+{{--            $("#installment_table").html('');--}}
+{{--        }--}}
+{{--        if ($("#amount").val() != 0 && $("#CardNumber").val().length >= 6) {--}}
+{{--            console.log("1");--}}
+{{--            getPosInstallments();--}}
+{{--        }--}}
 
-    });
+{{--    });--}}
 
-    function getTotal() {
-        //var total = parseFloat($("input[name='installment']:checked").data("total")).toFixed(2);
-        var total = $("input[name='installment']:checked").data("total");
-        $('#total').val(total);
-    };
+{{--    function getTotal() {--}}
+{{--        //var total = parseFloat($("input[name='installment']:checked").data("total")).toFixed(2);--}}
+{{--        var total = $("input[name='installment']:checked").data("total");--}}
+{{--        $('#total').val(total);--}}
+{{--    };--}}
 
-    function getPosInstallments() {
+{{--    function getPosInstallments() {--}}
 
-        var data = {};
-        data['credit_card'] = $("#CardNumber").val().substr(0, 6);
-        data['Amount'] = $("#amount").val();
-        data['currency_code'] = "TRY";
-        data['merchant_key'] = "asdadsasdasdasd";
+{{--        var data = {};--}}
+{{--        data['credit_card'] = $("#CardNumber").val().substr(0, 6);--}}
+{{--        data['Amount'] = $("#amount").val();--}}
+{{--        data['currency_code'] = "TRY";--}}
+{{--        data['merchant_key'] = "asdadsasdasdasd";--}}
 
-        $.ajax({
-            type: 'POST',
-            dataType: 'json',
-            data: JSON.stringify(data),
-            url: '/GetPos',
-            contentType: 'application/json',
-            processData : false,
-            success: function (result) {
-                if (result.success) {
+{{--        $.ajax({--}}
+{{--            type: 'POST',--}}
+{{--            dataType: 'json',--}}
+{{--            data: JSON.stringify(data),--}}
+{{--            url: '/GetPos',--}}
+{{--            contentType: 'application/json',--}}
+{{--            processData : false,--}}
+{{--            success: function (result) {--}}
+{{--                if (result.success) {--}}
 
-                    var table = '<table class="table table-sm table-hover table-bordered" style="width: 40%;"><thead><tr><th scope="col">#</th><th scope="col">Taksit</th><th scope="col">Taksitli Tutarı</th></tr></thead><tbody>';
-                    $.each(result.data.data, function (index, value) {
+{{--                    var table = '<table class="table table-sm table-hover table-bordered" style="width: 40%;"><thead><tr><th scope="col">#</th><th scope="col">Taksit</th><th scope="col">Taksitli Tutarı</th></tr></thead><tbody>';--}}
+{{--                    $.each(result.data.data, function (index, value) {--}}
 
-                        table += '<tr><th scope="row"><input onclick="getTotal();" class="form-check-input" type="radio" id="installment_'+ index +'" name="installment" value="' + value.installmentsNumber + '"' + (value.installmentsNumber == 1 ? 'checked' : '') + ' data-total="' + value.amountToBePaid.toString().replace('.', ',') + '"></th><td>' + (value.installmentsNumber == 1 ? 'Tek Çekim' : + value.installmentsNumber + ' Taksit') + '</td><td>' + value.amountToBePaid + ' ₺</td > </tr><tr>';
-                    });
+{{--                        table += '<tr><th scope="row"><input onclick="getTotal();" class="form-check-input" type="radio" id="installment_'+ index +'" name="installment" value="' + value.installmentsNumber + '"' + (value.installmentsNumber == 1 ? 'checked' : '') + ' data-total="' + value.amountToBePaid.toString().replace('.', ',') + '"></th><td>' + (value.installmentsNumber == 1 ? 'Tek Çekim' : + value.installmentsNumber + ' Taksit') + '</td><td>' + value.amountToBePaid + ' ₺</td > </tr><tr>';--}}
+{{--                    });--}}
 
-                    table += '</tbody></table>';
+{{--                    table += '</tbody></table>';--}}
 
-                    $("#installment_table").html(table);
-                    var total = $("input[name='installment']:checked").data("total");
-                    $('#total').val(total);
-                }
-                else {
-                    $("#formInfo").html('<div class="alert ' + (result.result ? 'alert-success' : 'alert-danger') + '" role="alert">' + result.message + '<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');
-                }
-            },
-            error: function (xhr) {
-                $("#formInfo").html('<div class="alert alert-danger" role="alert">UNKOWN ERROR!<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');
-            }
-        });
+{{--                    $("#installment_table").html(table);--}}
+{{--                    var total = $("input[name='installment']:checked").data("total");--}}
+{{--                    $('#total').val(total);--}}
+{{--                }--}}
+{{--                else {--}}
+{{--                    $("#formInfo").html('<div class="alert ' + (result.result ? 'alert-success' : 'alert-danger') + '" role="alert">' + result.message + '<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');--}}
+{{--                }--}}
+{{--            },--}}
+{{--            error: function (xhr) {--}}
+{{--                $("#formInfo").html('<div class="alert alert-danger" role="alert">UNKOWN ERROR!<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');--}}
+{{--            }--}}
+{{--        });--}}
 
 
-    }
+{{--    }--}}
 
-</script>
-}
+{{--</script>--}}
+{{--}--}}
+{{--@endsection--}}
 
 
 
