@@ -1,4 +1,4 @@
-/*! =========================================================
+﻿/*! =========================================================
  *
  Paper Bootstrap Wizard - V1.0.1
 *
@@ -31,7 +31,8 @@
  *
  * ========================================================= */
 
-// Paper Bootstrap Wizard Functions
+
+jQuery.validator.addMethod("tcno", function (a) { var c = 0, d = 0, e = 0, b = 0, f = 0; if (a.charAt(0) == 0 || a.length != 11) return false; b = parseInt(a.charAt(9), 10); f = parseInt(a.charAt(10), 10); for (i = 0; i < 9; i++) { cd = parseInt(a.charAt(i), 10); i % 2 == 0 ? (c += cd) : (d += cd); e += cd } return (7 * c - d) % 10 == b && (e + b) % 10 == f ? true : false }, "L\u00fctfen ge\u00e7erli bir T.C Kimlik No girin.");
 
 searchVisible = 0;
 transparent = true;
@@ -43,20 +44,94 @@ transparent = true;
 
             // Code for the Validator
             var $validator = $('.wizard-card form').validate({
-        		  rules: {
-        		    firstname: {
-        		      required: true,
-        		      minlength: 3
-        		    },
-        		    lastname: {
-        		      required: true,
-        		      minlength: 3
-        		    },
-        		    email: {
+                rules: {
+                    amount: {
+                        required: true
+                    },
+        		    name: {
         		      required: true
-        		    }
+        		    },
+        		    phone: {
+        		      required: true
+        		    },
+        		    tckn: {
+                        required: true,
+                        minlength: 11,
+                        maxlength: 11,
+                        tcno: true
+                    },
+                    description: {
+                        required: true
+                    },
+                    CardHolderName: {
+                        required: true
+                    },
+                    CardNumber: {
+                        required: true,
+                        creditcard: true
+                    },
+                    ExpiryDateMonth: {
+                        required: true,
+                        min: 1,
+                        max: 12
+                    },
+                    ExpiryDateYear: {
+                        required: true,
+                        min: (new Date).getFullYear(),
+                        max: (new Date).getFullYear() + 10
+                    },
+                    cvv: {
+                        required: true
+                    }
                 },
-        	});
+                messages: {
+                    name: "Lütfen Ad Soyad alanını giriniz",
+                    amount: "Lütfen Tutar alanını giriniz",
+                    phone: "Lütfen Cep Telefonu alanını giriniz",
+                    tckn: {
+                        required: "Lütfen TCKN alanını giriniz",
+                        minlength: "TCKN alanı en az 11 karakter uzunluğunda olmalıdır",
+                        maxlength: "TCKN alanı en az 11 karakter uzunluğunda olmalıdır",
+                        tcno: "Geçerli bir TC Kimlik No giriniz"
+                    },
+                    description: "Lütfen Açıklama alanını giriniz",
+                    CardHolderName: "Lütfen Kart Sahibi alanını giriniz",
+                    CardNumber: {
+                        required: "Lütfen Kart Numarası alanını giriniz",
+                        creditcard: "Geçerli bir kredi kartı numarası giriniz"
+                    },
+                    ExpiryDateMonth: {
+                        required: "Lütfen Son Kullanma Ayı alanını giriniz",
+                        min: "Son Kullanma Ayı alanı en az 1 olmalıdır",
+                        max: "Son Kullanma Ayı alanı en fazla 12 olmalıdır"
+                    },
+                    ExpiryDateYear: {
+                        required: "Lütfen Son Kullanma Yılı alanını giriniz",
+                        min: "Son Kullanma Yılı alanı en az " + (new Date).getFullYear() + " olmalıdır",
+                        max: "Son Kullanma Yılı alanı en fazla " + ((new Date).getFullYear() + 10) + " olmalıdır"
+                    },
+                    cvv: "Lütfen Güvenlik Numarası alanını giriniz"
+                },
+
+                submitHandler: function (form) {
+                    console.log("submit");
+                    form.submit();
+                }
+            });
+
+
+            /*$('#submitForm').on('submit', function () {
+                console.log("submit");
+
+                if ($validator.valid()) {
+                    $('#submitForm').submit();
+                    return true;
+                }
+                else {
+                    console.log("not valid");
+                    return false;
+                }
+            });*/
 
             // Wizard Initialization
           	$('.wizard-card').bootstrapWizard({

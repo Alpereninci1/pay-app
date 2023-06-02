@@ -49,6 +49,7 @@ class PaymentController extends Controller
 
     public function processPayment3d(Request $request)
     {
+        //her get token edilen yerde null check yap.
         $tokenValue = Session::get('token');
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
@@ -149,7 +150,7 @@ class PaymentController extends Controller
         $merchant_key = Config::get('app.merchant_key');
         $currency_code = Config::get('app.currency_code');
         $invoice_description = Config::get('app.invoice_description');
-        $total = Config::get('app.total');
+        $total = $request->input('total');
         $name = Config::get('app.name');
         $surname = Config::get('app.surname');
         $dataArray['merchant_key'] = $merchant_key;
@@ -212,14 +213,14 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
-
+        $this->getToken();
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
         $credit_card = $request->input('credit_card');
         $amount = $request->input('amount');
-        $currency_code = 'TRY';
-        $is_2d = $request->input('is_2d');
+        $currency_code = Config::get('app.currency_code');
+        $is_2d = '0';
         $merchant_key = Config::get('app.merchant_key');
 
         try {
@@ -238,7 +239,7 @@ class PaymentController extends Controller
             ]);
             if($response->getStatusCode() === 200) {
                 $responseData = json_decode($response->getBody(),true);
-                return view('get-pos-result',['response_data' => $response->getBody()]);
+                return $responseData;
             }else {
                 return response()->json(['message' => 'İşlem başarısız.']);
             }
@@ -322,5 +323,19 @@ class PaymentController extends Controller
     public function index()
     {
         return view('index');
+    }
+
+    public function processPayment(Request $request)
+    {
+
+        $this->getToken();
+        // Checkbox durumunu kontrol et
+        $is3D = $request->has('3d_checkbox');
+
+        if ($is3D) {
+            return $this->processPayment3d($request);
+        } else {
+            return $this->processPayment2d($request);
+        }
     }
 }

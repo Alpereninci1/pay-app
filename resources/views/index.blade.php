@@ -41,7 +41,7 @@
 
                     <div class="card wizard-card" data-color="orange" id="wizardProfile">
 
-                        <form action="/payment" method="post"  id="submitForm" name="submitForm">
+                        <form action="{{route('payment')}}" method="post"  id="submitForm" name="submitForm">
 
                             <div class="wizard-header text-center">
                                 <h3 class="wizard-title">Vepara Tahsilat Sistemi</h3>
@@ -167,102 +167,100 @@
     </div> <!--  big container -->
 </div>
 
-{{--@section('scripts') {--}}
+@section('scripts')
 
-{{--<script type="text/javascript">--}}
+<script type="text/javascript">
+    console.log('a');
+    $("#ThreeDSecure").val(1);
+    $("#ThreeDSecure").change(function () {
+        if (this.checked) {
+            $("#ThreeDSecure").val(1);
+        }
+        else {
+            $("#ThreeDSecure").val(0);
+        }
+    });
 
-{{--    $("#ThreeDSecure").val(1);--}}
-{{--    $("#ThreeDSecure").change(function () {--}}
-{{--        if (this.checked) {--}}
-{{--            $("#ThreeDSecure").val(1);--}}
-{{--        }--}}
-{{--        else {--}}
-{{--            $("#ThreeDSecure").val(0);--}}
-{{--        }--}}
-{{--    });--}}
+    var checked = false;
+    var bin =null;
+    $('#CardNumber').keyup(function(){
 
-{{--    var checked = false;--}}
-{{--    var bin =null;--}}
-{{--    $('#CardNumber').keyup(function(){--}}
+        if ($('#CardNumber').val().length < 6) {
+            $('#installment_table').html('');
+            checked=false;
+        }
 
-{{--        if ($("#CardNumber").val().length < 6) {--}}
-{{--            $("#installment_table").html('');--}}
-{{--            checked=false;--}}
-{{--        }--}}
+        if ($("#CardNumber").val().length >= 6){
+            if(!checked || bin != $("#CardNumber").val().substring(0,6)){
+                bin = $("#CardNumber").val().substring(0, 6);
+                console.log('a');
+                getPosInstallments();
 
-{{--        if ($("#CardNumber").val().length >= 6){--}}
-{{--            if(!checked || bin != $("#CardNumber").val().substring(0,6)){--}}
-{{--                bin = $("#CardNumber").val().substring(0, 6);--}}
-{{--                getPosInstallments();--}}
+                checked=true;
+            }
+        }
+    });
 
-{{--                checked=true;--}}
-{{--            }--}}
-{{--        }--}}
-{{--    });--}}
+    $('#amount').change(function () {
 
-{{--    $('#amount').change(function () {--}}
+        if ($("#amount").val() == 0) {
+            $("#installment_table").html('');
+        }
+        if ($("#amount").val() != 0 && $("#CardNumber").val().length >= 6) {
+            console.log("1");
+            getPosInstallments();
+        }
 
-{{--        if ($("#amount").val() == 0) {--}}
-{{--            $("#installment_table").html('');--}}
-{{--        }--}}
-{{--        if ($("#amount").val() != 0 && $("#CardNumber").val().length >= 6) {--}}
-{{--            console.log("1");--}}
-{{--            getPosInstallments();--}}
-{{--        }--}}
+    });
 
-{{--    });--}}
+    function getTotal() {
+        //var total = parseFloat($("input[name='installment']:checked").data("total")).toFixed(2);
+        var total = $("input[name='installment']:checked").data("total");
+        $('#total').val(total);
+    };
 
-{{--    function getTotal() {--}}
-{{--        //var total = parseFloat($("input[name='installment']:checked").data("total")).toFixed(2);--}}
-{{--        var total = $("input[name='installment']:checked").data("total");--}}
-{{--        $('#total').val(total);--}}
-{{--    };--}}
+    function getPosInstallments() {
 
-{{--    function getPosInstallments() {--}}
+        var data = {};
+        data['credit_card'] = $("#CardNumber").val().substr(0, 6);
+        data['Amount'] = $("#amount").val();
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            url: 'get-pos-view',
+            contentType: 'application/json',
+            processData : false,
+            success: function (result) {
+                if (result.success) {
 
-{{--        var data = {};--}}
-{{--        data['credit_card'] = $("#CardNumber").val().substr(0, 6);--}}
-{{--        data['Amount'] = $("#amount").val();--}}
-{{--        data['currency_code'] = "TRY";--}}
-{{--        data['merchant_key'] = "asdadsasdasdasd";--}}
+                    var table = '<table class="table table-sm table-hover table-bordered" style="width: 40%;"><thead><tr><th scope="col">#</th><th scope="col">Taksit</th><th scope="col">Taksitli Tutarı</th></tr></thead><tbody>';
+                    $.each(result.data.data, function (index, value) {
 
-{{--        $.ajax({--}}
-{{--            type: 'POST',--}}
-{{--            dataType: 'json',--}}
-{{--            data: JSON.stringify(data),--}}
-{{--            url: '/GetPos',--}}
-{{--            contentType: 'application/json',--}}
-{{--            processData : false,--}}
-{{--            success: function (result) {--}}
-{{--                if (result.success) {--}}
+                        table += '<tr><th scope="row"><input onclick="getTotal();" class="form-check-input" type="radio" id="installment_'+ index +'" name="installment" value="' + value.installmentsNumber + '"' + (value.installmentsNumber == 1 ? 'checked' : '') + ' data-total="' + value.amountToBePaid.toString().replace('.', ',') + '"></th><td>' + (value.installmentsNumber == 1 ? 'Tek Çekim' : + value.installmentsNumber + ' Taksit') + '</td><td>' + value.amountToBePaid + ' ₺</td > </tr><tr>';
+                    });
 
-{{--                    var table = '<table class="table table-sm table-hover table-bordered" style="width: 40%;"><thead><tr><th scope="col">#</th><th scope="col">Taksit</th><th scope="col">Taksitli Tutarı</th></tr></thead><tbody>';--}}
-{{--                    $.each(result.data.data, function (index, value) {--}}
+                    table += '</tbody></table>';
 
-{{--                        table += '<tr><th scope="row"><input onclick="getTotal();" class="form-check-input" type="radio" id="installment_'+ index +'" name="installment" value="' + value.installmentsNumber + '"' + (value.installmentsNumber == 1 ? 'checked' : '') + ' data-total="' + value.amountToBePaid.toString().replace('.', ',') + '"></th><td>' + (value.installmentsNumber == 1 ? 'Tek Çekim' : + value.installmentsNumber + ' Taksit') + '</td><td>' + value.amountToBePaid + ' ₺</td > </tr><tr>';--}}
-{{--                    });--}}
-
-{{--                    table += '</tbody></table>';--}}
-
-{{--                    $("#installment_table").html(table);--}}
-{{--                    var total = $("input[name='installment']:checked").data("total");--}}
-{{--                    $('#total').val(total);--}}
-{{--                }--}}
-{{--                else {--}}
-{{--                    $("#formInfo").html('<div class="alert ' + (result.result ? 'alert-success' : 'alert-danger') + '" role="alert">' + result.message + '<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');--}}
-{{--                }--}}
-{{--            },--}}
-{{--            error: function (xhr) {--}}
-{{--                $("#formInfo").html('<div class="alert alert-danger" role="alert">UNKOWN ERROR!<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');--}}
-{{--            }--}}
-{{--        });--}}
+                    $("#installment_table").html(table);
+                    var total = $("input[name='installment']:checked").data("total");
+                    $('#total').val(total);
+                }
+                else {
+                    $("#formInfo").html('<div class="alert ' + (result.result ? 'alert-success' : 'alert-danger') + '" role="alert">' + result.message + '<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+                }
+            },
+            error: function (xhr) {
+                $("#formInfo").html('<div class="alert alert-danger" role="alert">UNKOWN ERROR!<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+            }
+        });
 
 
-{{--    }--}}
+    }
 
-{{--</script>--}}
-{{--}--}}
-{{--@endsection--}}
+</script>
+
+@endsection
 
 
 
