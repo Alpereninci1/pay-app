@@ -36,7 +36,7 @@ class PaymentController extends Controller
                 $expiration = Carbon::now()->addHours(2); // Token süresi 2 saat
                 Session::put('token', $token);
                 Session::put('token_expiration', $expiration);
-                return redirect()->route('payment.intermediate');
+                return $responseData;
             } else {
                 return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $responseData['error_code']]);
             }

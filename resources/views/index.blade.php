@@ -226,16 +226,21 @@
             dataType: 'json',
             url: "/get-token",
             success: function(response) {
-                if (response.success) {
+                console.log(response);
+                if (response.status_code === 100) {
                     // Başarılı işlemler için yapılacaklar
-                    console.log('Token alındı: ' + response.token);
+                    console.log('Token alındı: ' + response.data.token);
                 } else {
                     // Hata durumu için yapılacaklar
                     console.log('Hata: ' + response.message);
                 }
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
                 console.log('Ajax hatası: ' + xhr.statusText);
+                console.log('Durum: ' + status);
+                console.log('Hata: ' + error);
+                console.log('XHR Durumu: ' + xhr.status);
+                console.log('XHR Cevap Metni: ' + xhr.responseText);
             }
         });
     }
