@@ -108,28 +108,29 @@
                                     </div>
                                 </div>
                                 <div class="tab-pane" id="account" name="account">
+                                    <meta name="csrf-token" content="{{ csrf_token() }}">
                                     <h5 class="info-text"> Kart Bilgileri </h5>
                                     <div class="row">
                                         <div class="col-sm-12">
                                             <div class="form-group">
                                                 <label>Kart Sahibi <small>*</small></label>
-                                                <input name="CardHolderName" id="CardHolderName" type="text" class="form-control" placeholder="Kart Sahibi...">
+                                                <input name="cc_holder_name" id="cc_holder_name" type="text" class="form-control" placeholder="Kart Sahibi...">
                                             </div>
                                         </div>
                                         <div class="col-sm-12">
                                             <div class="form-group">
                                                 <label>Kart Numarası <small>*</small></label>
-                                                <input name="CardNumber" id="CardNumber" type="text" class="form-control" placeholder="Kart Numarası...">
+                                                <input name="cc_no" id="cc_no" type="text" class="form-control" placeholder="Kart Numarası...">
                                             </div>
                                         </div>
                                         <div class="col-sm-12">
                                             <div class="form-group col-sm-4">
                                                 <label>Son Kullanma Ayı <small>*</small></label>
-                                                <input name="ExpiryDateMonth" id="ExpiryDateMonth" type="number" class="form-control" placeholder="Son Kullanma Ayı...">
+                                                <input name="expiry_month" id="expiry_month" type="number" class="form-control" placeholder="Son Kullanma Ayı...">
                                             </div>
                                             <div class="form-group col-sm-4">
                                                 <label>Son Kullanma Yılı <small>*</small></label>
-                                                <input name="ExpiryDateYear" id="ExpiryDateYear" type="number" class="form-control" placeholder="Son Kullanma Yılı...">
+                                                <input name="expiry_year" id="expiry_year" type="number" class="form-control" placeholder="Son Kullanma Yılı...">
                                             </div>
                                             <div class="form-group col-sm-4">
                                                 <label>Güvenlik Numarası <small>*</small></label>
@@ -138,7 +139,7 @@
                                         </div>
                                         <div class="col-sm-12">
                                             <div class="form-group col-sm-4">
-                                                <input class="form-check-input" type="checkbox" id="ThreeDSecure" name="ThreeDSecure" checked>
+                                                <input class="form-check-input" type="checkbox" id="3d_checkbox" name="3d_checkbox" checked>
                                                 <label> 3D Secure</label>
                                             </div>
                                         </div>
@@ -167,33 +168,34 @@
     </div> <!--  big container -->
 </div>
 
-@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script type="text/javascript">
     console.log('a');
-    $("#ThreeDSecure").val(1);
-    $("#ThreeDSecure").change(function () {
+    $("#3d_checkbox").val(1);
+    $("#3d_checkbox").change(function () {
         if (this.checked) {
-            $("#ThreeDSecure").val(1);
+            $("#3d_checkbox").val(1);
         }
         else {
-            $("#ThreeDSecure").val(0);
+            $("#3d_checkbox").val(0);
         }
     });
 
     var checked = false;
     var bin =null;
-    $('#CardNumber').keyup(function(){
+    $('#cc_no').keyup(function(){
 
-        if ($('#CardNumber').val().length < 6) {
+        if ($('#cc_no').val().length < 6) {
             $('#installment_table').html('');
             checked=false;
         }
 
-        if ($("#CardNumber").val().length >= 6){
-            if(!checked || bin != $("#CardNumber").val().substring(0,6)){
-                bin = $("#CardNumber").val().substring(0, 6);
+        if ($("#cc_no").val().length >= 6){
+            if(!checked || bin != $("#cc_no").val().substring(0,6)){
+                bin = $("#cc_no").val().substring(0, 6);
                 console.log('a');
+                getToken();
                 getPosInstallments();
 
                 checked=true;
@@ -206,8 +208,7 @@
         if ($("#amount").val() == 0) {
             $("#installment_table").html('');
         }
-        if ($("#amount").val() != 0 && $("#CardNumber").val().length >= 6) {
-            console.log("1");
+        if ($("#amount").val() != 0 && $("#cc_no").val().length >= 6) {
             getPosInstallments();
         }
 
@@ -219,18 +220,41 @@
         $('#total').val(total);
     };
 
+    function getToken() {
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: "/get-token",
+            success: function(response) {
+                if (response.success) {
+                    // Başarılı işlemler için yapılacaklar
+                    console.log('Token alındı: ' + response.token);
+                } else {
+                    // Hata durumu için yapılacaklar
+                    console.log('Hata: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                console.log('Ajax hatası: ' + xhr.statusText);
+            }
+        });
+    }
+
     function getPosInstallments() {
 
         var data = {};
-        data['credit_card'] = $("#CardNumber").val().substr(0, 6);
-        data['Amount'] = $("#amount").val();
+        data['credit_card'] = $("#cc_no").val().substr(0, 6);
+        data['amount'] = $("#amount").val();
         $.ajax({
             type: 'POST',
             dataType: 'json',
             data: JSON.stringify(data),
-            url: 'get-pos-view',
+            url: '/get-pos',
             contentType: 'application/json',
             processData : false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
             success: function (result) {
                 if (result.success) {
 
@@ -259,8 +283,6 @@
     }
 
 </script>
-
-@endsection
 
 
 

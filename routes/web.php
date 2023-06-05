@@ -31,6 +31,7 @@ Route::post('paymentCardToken',[\App\Http\Controllers\PaymentController::class,'
 Route::get('paymentCardToken-view',[\App\Http\Controllers\PaymentController::class,'payByCardTokenView'])->name('payment.pay-by-card-token-view');
 Route::get('index',[\App\Http\Controllers\PaymentController::class,'index'])->name('payment.index');
 Route::post('payment',[\App\Http\Controllers\PaymentController::class,'processPayment'])->name('payment');
+Route::get('get-token',[\App\Http\Controllers\PaymentController::class,'getToken'])->name('get-token');
 Route::get('deneme',function (){
    return view('deneme');
 });

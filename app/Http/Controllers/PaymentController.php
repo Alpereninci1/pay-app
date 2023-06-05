@@ -213,7 +213,6 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
-        $this->getToken();
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
