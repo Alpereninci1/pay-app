@@ -62,10 +62,10 @@ class PaymentController extends Controller
         $items = json_decode($json, true);
 
         $products = [];
-
+        $total = $request->input('total');
         foreach ($items['products'] as $item) {
             $obj = new \stdClass();
-            $obj->price = $item['price'];
+            $obj->price = $total;
             $obj->name = $item['name'];
             $obj->description = $item['description'];
             $obj->quantity = $item['quantity'];
@@ -80,11 +80,10 @@ class PaymentController extends Controller
         $currencyCode = Config::get('app.invoice_description');
         $installmentsNumber = $request->input('installments_number');
         $invoiceDescription = Config::get('app.invoice_description');
-        $total = $request->input('total');
         $merchantKey = Config::get('app.merchant_key');
         $name = Config::get('app._name');
         $surname = Config::get('app.surname');
-        $hashKey = HashGeneratorHelper::hashGenerator();
+        $hashKey = HashGeneratorHelper::hashGenerator($total,$installmentsNumber);
         $invoiceId = Session::get('invoice_id');
         $returnUrl = Config::get('app.return_url');
         $cancelUrl = Config::get('app.cancel_url');
@@ -140,9 +139,12 @@ class PaymentController extends Controller
 
         $products = [];
 
+        $total = (double)$request->input('total');
+        $installments_number = $request->input('installments_number');
+
         foreach ($items['products'] as $item) {
             $obj = new \stdClass();
-            $obj->price = $item['price'];
+            $obj->price = (double)$request->input('total');
             $obj->name = $item['name'];
             $obj->description = $item['description'];
             $obj->quantity = $item['quantity'];
@@ -161,11 +163,11 @@ class PaymentController extends Controller
                     'merchant_key' => Config::get('app.merchant_key'),
                     'currency_code' => Config::get('app.currency_code'),
                     'invoice_description' => Config::get('app.invoice_description'),
-                    'total' => (int)$request->input('total'),
-                    'installments_number' => $request->input('installments_number'),
+                    'total' => $total,
+                    'installments_number' => $installments_number,
                     'name' => Config::get('app.name'),
                     'surname' => Config::get('app.surname'),
-                    'hash_key' => HashGeneratorHelper::hashGenerator(),
+                    'hash_key' => HashGeneratorHelper::hashGenerator($total,$installments_number),
                     'invoice_id' => Session::get('invoice_id'),
                     'items' => $products
                 ],
@@ -215,7 +217,10 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
-        $this->getToken();
+        if(!Session::has('token'))
+        {
+            $this->getToken();
+        }
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 

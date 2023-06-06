@@ -1,15 +1,16 @@
 <?php
 namespace App\Helpers;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
 
 class HashGeneratorHelper{
 
-    public static function hashGenerator()
+    public static function hashGenerator($total,$installment)
     {
-        $total = 600;
-        $installment = 1;
-        $currency_code = 'TRY';
+        $total = $total;
+        $installment = $installment;
+        $currency_code = Config::get('app.currency_code');
         $merchant_key = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
         $invoice_id = rand(0,10000);
         //$invoice_id = "234252321312422342344";
