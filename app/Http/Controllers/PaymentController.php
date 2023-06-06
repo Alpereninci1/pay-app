@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\HashGeneratorHelper;
 use Carbon\Carbon;
+use Dflydev\DotAccessData\Data;
 use GuzzleHttp\Client;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\View;
 
 class PaymentController extends Controller
 {
-    public function getToken(Request $request)
+    public function getToken()
     {
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/token';
 
@@ -72,7 +73,6 @@ class PaymentController extends Controller
             $products[] = $obj;
         }
 
-
         $ccHolderName = $request->input('cc_holder_name');
         $ccNo = $request->input('cc_no');
         $expiryMonth = $request->input('expiry_month');
@@ -80,7 +80,7 @@ class PaymentController extends Controller
         $currencyCode = Config::get('app.invoice_description');
         $installmentsNumber = $request->input('installments_number');
         $invoiceDescription = Config::get('app.invoice_description');
-        $total = Config::get('app.total');
+        $total = $request->input('total');
         $merchantKey = Config::get('app.merchant_key');
         $name = Config::get('app._name');
         $surname = Config::get('app.surname');
@@ -88,7 +88,7 @@ class PaymentController extends Controller
         $invoiceId = Session::get('invoice_id');
         $returnUrl = Config::get('app.return_url');
         $cancelUrl = Config::get('app.cancel_url');
-
+        $total_int = (int)$total;
         $client = new Client();
         try {
             $response = $client->post($apiUrl, [
@@ -101,7 +101,7 @@ class PaymentController extends Controller
                     'installments_number' => $installmentsNumber,
                     'invoice_id' => $invoiceId,
                     'invoice_description' => $invoiceDescription,
-                    'total' => $total,
+                    'total' => $total_int,
                     'merchant_key' => $merchantKey,
                     'name' => $name,
                     'surname' => $surname,
@@ -117,8 +117,6 @@ class PaymentController extends Controller
             ]);
             if ($response->getStatusCode() === 200) {
                 return $response->getBody();
-//                $view = View::make('payment_result')->with('responseHtml', $response->getBody());
-//                return $view;
             } else {
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
@@ -139,41 +137,45 @@ class PaymentController extends Controller
         $json = Storage::get($filePath);
 
         $items = json_decode($json, true);
-        $products = '';
-        foreach ($items as $item){
-            $products = $item;
+
+        $products = [];
+
+        foreach ($items['products'] as $item) {
+            $obj = new \stdClass();
+            $obj->price = $item['price'];
+            $obj->name = $item['name'];
+            $obj->description = $item['description'];
+            $obj->quantity = $item['quantity'];
+
+            $products[] = $obj;
         }
 
         $client = new Client();
-        $rawData = $request->getContent();
-        $dataArray = json_decode($rawData, true);
-        $merchant_key = Config::get('app.merchant_key');
-        $currency_code = Config::get('app.currency_code');
-        $invoice_description = Config::get('app.invoice_description');
-        $total = $request->input('total');
-        $name = Config::get('app.name');
-        $surname = Config::get('app.surname');
-        $dataArray['merchant_key'] = $merchant_key;
-        $dataArray['currency_code'] = $currency_code;
-        $dataArray['invoice_description'] = $invoice_description;
-        $dataArray['total'] = $total;
-        $dataArray['name'] = $name;
-        $dataArray['surname'] = $surname;
-        $dataArray['hash_key'] = HashGeneratorHelper::hashGenerator();
-        $dataArray['invoice_id'] = Session::get('invoice_id');
-        $dataArray['items'] = $products;
-        $jsonData = json_encode($dataArray);
         try {
             $response = $client->post($apiUrl, [
-                'body' => $jsonData,
+                'json' => [
+                    'cc_holder_name' => $request->input('cc_holder_name'),
+                    'cc_no' => $request->input('cc_no'),
+                    'expiry_month' => $request->input('expiry_month'),
+                    'expiry_year' => $request->input('expiry_year'),
+                    'merchant_key' => Config::get('app.merchant_key'),
+                    'currency_code' => Config::get('app.currency_code'),
+                    'invoice_description' => Config::get('app.invoice_description'),
+                    'total' => (int)$request->input('total'),
+                    'installments_number' => $request->input('installments_number'),
+                    'name' => Config::get('app.name'),
+                    'surname' => Config::get('app.surname'),
+                    'hash_key' => HashGeneratorHelper::hashGenerator(),
+                    'invoice_id' => Session::get('invoice_id'),
+                    'items' => $products
+                ],
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
             if($response->getStatusCode() === 200) {
-                $responseData = json_decode($response->getBody(),true);
-                return response()->json($responseData);
+                return $response->getBody();
             } else {
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
@@ -213,6 +215,7 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
+        $this->getToken();
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
@@ -326,11 +329,7 @@ class PaymentController extends Controller
 
     public function processPayment(Request $request)
     {
-
-        $this->getToken();
-        // Checkbox durumunu kontrol et
         $is3D = $request->has('3d_checkbox');
-
         if ($is3D) {
             return $this->processPayment3d($request);
         } else {

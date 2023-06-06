@@ -40,9 +40,8 @@
                 <div class="wizard-container">
 
                     <div class="card wizard-card" data-color="orange" id="wizardProfile">
-
                         <form action="{{route('payment')}}" method="post"  id="submitForm" name="submitForm">
-
+                            @csrf
                             <div class="wizard-header text-center">
                                 <h3 class="wizard-title">Vepara Tahsilat Sistemi</h3>
                             </div>
@@ -171,7 +170,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script type="text/javascript">
-    console.log('a');
     $("#3d_checkbox").val(1);
     $("#3d_checkbox").change(function () {
         if (this.checked) {
@@ -194,10 +192,7 @@
         if ($("#cc_no").val().length >= 6){
             if(!checked || bin != $("#cc_no").val().substring(0,6)){
                 bin = $("#cc_no").val().substring(0, 6);
-                console.log('a');
-                getToken();
                 getPosInstallments();
-
                 checked=true;
             }
         }
@@ -215,35 +210,12 @@
     });
 
     function getTotal() {
-        //var total = parseFloat($("input[name='installment']:checked").data("total")).toFixed(2);
-        var total = $("input[name='installment']:checked").data("total");
+        var total = $("input[name='installments_number']:checked").data("total");
+        console.log("total : " + total);
         $('#total').val(total);
+        console.log($('#total').val());
     };
 
-    function getToken() {
-        $.ajax({
-            type: 'GET',
-            dataType: 'json',
-            url: "/get-token",
-            success: function(response) {
-                console.log(response);
-                if (response.status_code === 100) {
-                    // Başarılı işlemler için yapılacaklar
-                    console.log('Token alındı: ' + response.data.token);
-                } else {
-                    // Hata durumu için yapılacaklar
-                    console.log('Hata: ' + response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.log('Ajax hatası: ' + xhr.statusText);
-                console.log('Durum: ' + status);
-                console.log('Hata: ' + error);
-                console.log('XHR Durumu: ' + xhr.status);
-                console.log('XHR Cevap Metni: ' + xhr.responseText);
-            }
-        });
-    }
 
     function getPosInstallments() {
 
@@ -254,25 +226,23 @@
             type: 'POST',
             dataType: 'json',
             data: JSON.stringify(data),
-            url: '/get-pos',
+            url: '{{route('payment.get-pos')}}',
             contentType: 'application/json',
             processData : false,
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function (result) {
-                if (result.success) {
-
+                if (result.status_code === 100) {
                     var table = '<table class="table table-sm table-hover table-bordered" style="width: 40%;"><thead><tr><th scope="col">#</th><th scope="col">Taksit</th><th scope="col">Taksitli Tutarı</th></tr></thead><tbody>';
-                    $.each(result.data.data, function (index, value) {
-
-                        table += '<tr><th scope="row"><input onclick="getTotal();" class="form-check-input" type="radio" id="installment_'+ index +'" name="installment" value="' + value.installmentsNumber + '"' + (value.installmentsNumber == 1 ? 'checked' : '') + ' data-total="' + value.amountToBePaid.toString().replace('.', ',') + '"></th><td>' + (value.installmentsNumber == 1 ? 'Tek Çekim' : + value.installmentsNumber + ' Taksit') + '</td><td>' + value.amountToBePaid + ' ₺</td > </tr><tr>';
+                    $.each(result.data, function (index, value) {
+                        table += '<tr><th scope="row"><input onclick="getTotal();" class="form-check-input" type="radio" id="installments_number_'+ index +'" name="installments_number" value="' + value.installments_number + '"' + (value.installments_number == 1 ? 'checked' : '') + ' data-total="' + value.amount_to_be_paid.toString().replace('.', ',') + '"></th><td>' + (value.installments_number == 1 ? 'Tek Çekim' : + value.installments_number + ' Taksit') + '</td><td>' + value.amount_to_be_paid + ' ₺</td > </tr><tr>';
                     });
 
                     table += '</tbody></table>';
 
                     $("#installment_table").html(table);
-                    var total = $("input[name='installment']:checked").data("total");
+                    var total = $("input[name='installments_number']:checked").data("total");
                     $('#total').val(total);
                 }
                 else {
@@ -283,12 +253,6 @@
                 $("#formInfo").html('<div class="alert alert-danger" role="alert">UNKOWN ERROR!<button type="button" class="btn-close float-end" data-bs-dismiss="alert" aria-label="Close"></button></div>');
             }
         });
-
-
     }
 
 </script>
-
-
-
-
