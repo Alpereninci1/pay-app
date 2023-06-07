@@ -26,7 +26,7 @@ class PaymentController extends Controller
 
         try {
             $response = $client->post($apiUrl, [
-                'form_params' => [
+                'json' => [
                     'app_id' => $app_id,
                     'app_secret' => $app_secret
                 ]
@@ -55,29 +55,12 @@ class PaymentController extends Controller
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
-        $filePath = "products.json";
-
-        $json = Storage::get($filePath);
-
-        $items = json_decode($json, true);
-
-        $products = [];
         $total = $request->input('total');
-        foreach ($items['products'] as $item) {
-            $obj = new \stdClass();
-            $obj->price = $total;
-            $obj->name = $item['name'];
-            $obj->description = $item['description'];
-            $obj->quantity = $item['quantity'];
-
-            $products[] = $obj;
-        }
-
         $ccHolderName = $request->input('cc_holder_name');
         $ccNo = $request->input('cc_no');
         $expiryMonth = $request->input('expiry_month');
         $expiryYear = $request->input('expiry_year');
-        $currencyCode = Config::get('app.invoice_description');
+        $currencyCode = Config::get('app.currency_code');
         $installmentsNumber = $request->input('installments_number');
         $invoiceDescription = Config::get('app.invoice_description');
         $merchantKey = Config::get('app.merchant_key');
@@ -87,7 +70,7 @@ class PaymentController extends Controller
         $invoiceId = Session::get('invoice_id');
         $returnUrl = Config::get('app.return_url');
         $cancelUrl = Config::get('app.cancel_url');
-        $total_int = (int)$total;
+
         $client = new Client();
         try {
             $response = $client->post($apiUrl, [
@@ -100,18 +83,24 @@ class PaymentController extends Controller
                     'installments_number' => $installmentsNumber,
                     'invoice_id' => $invoiceId,
                     'invoice_description' => $invoiceDescription,
-                    'total' => $total_int,
+                    'total' => (float)$total,
                     'merchant_key' => $merchantKey,
                     'name' => $name,
                     'surname' => $surname,
                     'hash_key' => $hashKey,
                     'return_url' => $returnUrl,
                     'cancel_url' => $cancelUrl,
-                    'items' => $products,
+                    'items' => json_encode([
+                        [
+                            'name' => 'item 1',
+                            'price' => (float)$total,
+                            'quantity' => 1,
+                            'description' => 'asfasfasfas'
+                        ]
+                    ]),
                 ],
                 'headers' => [
-                    //'Content-Type' => 'multipart/form-data',
-                    'Authorization' => 'Bearer ' . $tokenValue,
+                    'Authorization' => 'Bearer ' . $tokenValue
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
@@ -177,7 +166,7 @@ class PaymentController extends Controller
                 ]
             ]);
             if($response->getStatusCode() === 200) {
-                return $response->getBody();
+                return view('success',[$response->getBody()]);
             } else {
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
@@ -217,10 +206,7 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
-        if(!Session::has('token'))
-        {
-            $this->getToken();
-        }
+        $this->getToken();
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
@@ -340,5 +326,12 @@ class PaymentController extends Controller
         } else {
             return $this->processPayment2d($request);
         }
+    }
+
+    public function error(Request $request)
+    {
+        $data = $request->get('status_description');
+
+        return view('error', compact('data'));
     }
 }

@@ -1,21 +1,20 @@
 <?php
 namespace App\Helpers;
 
+use Dflydev\DotAccessData\Data;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class HashGeneratorHelper{
 
-    public static function hashGenerator($total,$installment)
+    public static function hashGenerator($total,$installmentsNumber)
     {
-        $total = $total;
-        $installment = $installment;
         $currency_code = Config::get('app.currency_code');
-        $merchant_key = '$2y$10$w/ODdbTmfubcbUCUq/ia3OoJFMUmkM1UVNBiIQIuLfUlPmaLUT1he';
-        $invoice_id = rand(0,10000);
-        //$invoice_id = "234252321312422342344";
-        $app_secret = '217071ea9f3f2e9b695d8f0039024e64';
-        $data = $total . '|' . $installment . '|' . $currency_code . '|' . $merchant_key . '|' . $invoice_id;
+        $merchant_key = Config::get('app.merchant_key');
+        $invoice_id = Str::random(15);
+        $app_secret = Config::get('app.app_secret');
+        $data = $total . '|' . $installmentsNumber . '|' . $currency_code . '|' . $merchant_key . '|' . $invoice_id;
 
         Session::put('invoice_id',$invoice_id);
 

@@ -6,5 +6,10 @@
 </head>
 <body>
 Error !!!!
+<div>
+    <p>
+        {!! $data !!}
+    </p>
+</div>
 </body>
 </html>
