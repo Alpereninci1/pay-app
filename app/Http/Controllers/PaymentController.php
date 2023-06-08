@@ -50,8 +50,11 @@ class PaymentController extends Controller
 
     public function processPayment3d(Request $request)
     {
-        //her get token edilen yerde null check yap.
-        $tokenValue = Session::get('token');
+        if (Session::has('token')) {
+            $tokenValue = Session::get('token');
+        } else {
+            $this->getToken();
+        }
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
@@ -116,7 +119,11 @@ class PaymentController extends Controller
 
     public function processPayment2d(Request $request)
     {
-        $tokenValue = Session::get('token');
+        if (Session::has('token')) {
+            $tokenValue = Session::get('token');
+        } else {
+            $this->getToken();
+        }
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart2D';
 
@@ -128,12 +135,12 @@ class PaymentController extends Controller
 
         $products = [];
 
-        $total = (double)$request->input('total');
-        $installments_number = $request->input('installments_number');
+        $total = (float)$request->input('total');
+        $installmentsNumber = $request->input('installments_number');
 
         foreach ($items['products'] as $item) {
             $obj = new \stdClass();
-            $obj->price = (double)$request->input('total');
+            $obj->price = (float)$request->input('total');
             $obj->name = $item['name'];
             $obj->description = $item['description'];
             $obj->quantity = $item['quantity'];
@@ -153,10 +160,10 @@ class PaymentController extends Controller
                     'currency_code' => Config::get('app.currency_code'),
                     'invoice_description' => Config::get('app.invoice_description'),
                     'total' => $total,
-                    'installments_number' => $installments_number,
+                    'installments_number' => $installmentsNumber,
                     'name' => Config::get('app.name'),
                     'surname' => Config::get('app.surname'),
-                    'hash_key' => HashGeneratorHelper::hashGenerator($total,$installments_number),
+                    'hash_key' => HashGeneratorHelper::hashGenerator($total,$installmentsNumber),
                     'invoice_id' => Session::get('invoice_id'),
                     'items' => $products
                 ],
@@ -178,7 +185,11 @@ class PaymentController extends Controller
 
     public function getInstallment(Request $request)
     {
-        $tokenValue = Session::get('token');
+        if (Session::has('token')) {
+            $tokenValue = Session::get('token');
+        } else {
+            $this->getToken();
+        }
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/installments';
         $client = new Client();
@@ -206,7 +217,7 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
-        $this->getToken();
+        $this->getToken(); // token aldığımız ilk yer
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
@@ -289,28 +300,10 @@ class PaymentController extends Controller
         return view('get-pos-view');
     }
 
-    public function payment3DView()
-    {
-        return view('payment3d-view');
-    }
 
-    public function payment2DView()
-    {
-        return view('payment2d-view');
-    }
-
-    public function mainPage()
-    {
-        return view('main');
-    }
     public function intermediate(Request $request)
     {
         return view('intermediate',['token' => Session::get('token')]);
-    }
-
-    public function payByCardTokenView()
-    {
-        return view('paybycardtoken-view');
     }
 
     public function index()
