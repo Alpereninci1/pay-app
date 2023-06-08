@@ -294,16 +294,6 @@ class PaymentController extends Controller
         }
     }
 
-    public function getPosView()
-    {
-        return view('get-pos-view');
-    }
-
-    public function index()
-    {
-        return view('index');
-    }
-
     public function processPayment(Request $request)
     {
         $is3D = $request->has('3d_checkbox');
@@ -317,7 +307,16 @@ class PaymentController extends Controller
     public function error(Request $request)
     {
         $data = $request->get('status_description');
-
         return view('error', compact('data'));
+    }
+
+    public function getPosView()
+    {
+        return view('get-pos-view');
+    }
+
+    public function index()
+    {
+        return view('index');
     }
 }
