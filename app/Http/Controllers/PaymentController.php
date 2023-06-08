@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Helpers\HashGeneratorHelper;
 use Carbon\Carbon;
-use Dflydev\DotAccessData\Data;
 use GuzzleHttp\Client;
 use Illuminate\Http\File;
 use Illuminate\Http\Request;
@@ -298,12 +297,6 @@ class PaymentController extends Controller
     public function getPosView()
     {
         return view('get-pos-view');
-    }
-
-
-    public function intermediate(Request $request)
-    {
-        return view('intermediate',['token' => Session::get('token')]);
     }
 
     public function index()
