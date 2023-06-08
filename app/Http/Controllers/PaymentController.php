@@ -55,7 +55,7 @@ class PaymentController extends Controller
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
-        $total = $request->input('total');
+        $total = (float)$request->input('total');
         $ccHolderName = $request->input('cc_holder_name');
         $ccNo = $request->input('cc_no');
         $expiryMonth = $request->input('expiry_month');
@@ -83,7 +83,7 @@ class PaymentController extends Controller
                     'installments_number' => $installmentsNumber,
                     'invoice_id' => $invoiceId,
                     'invoice_description' => $invoiceDescription,
-                    'total' => (float)$total,
+                    'total' => $total,
                     'merchant_key' => $merchantKey,
                     'name' => $name,
                     'surname' => $surname,
@@ -93,7 +93,7 @@ class PaymentController extends Controller
                     'items' => json_encode([
                         [
                             'name' => 'item 1',
-                            'price' => (float)$total,
+                            'price' => $total,
                             'quantity' => 1,
                             'description' => 'asfasfasfas'
                         ]
