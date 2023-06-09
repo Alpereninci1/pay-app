@@ -10,9 +10,6 @@
                         </div>
                         <h4 class="info-text"> Hay aksi!</h4>
                         <h5 class="text-center"> Ödeme işleminde bir hata oluştu.</h5>
-                        <h5 class="text-center"> {{$data}}</h5>
-
-
                     </div>
                 </div>
             </div>

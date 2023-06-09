@@ -1,14 +1,3 @@
-{{--<!DOCTYPE html>--}}
-{{--<html>--}}
-{{--<head>--}}
-{{--    <meta charset="UTF-8">--}}
-{{--    <title>Response</title>--}}
-{{--</head>--}}
-{{--<body>--}}
-{{-- Success !!!!--}}
-{{--</body>--}}
-{{--</html>--}}
-
 <div class="image-container set-full-height">
     <div class="container">
         <div class="row">

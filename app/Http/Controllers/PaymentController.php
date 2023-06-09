@@ -172,9 +172,9 @@ class PaymentController extends Controller
                 ]
             ]);
             if($response->getStatusCode() === 200) {
-                return view('success',[$response->getBody()]);
+                return redirect()->route('success');
             } else {
-                return response()->json(['message' => 'Ödeme işlemi başarısız.']);
+                return redirect()->route('error');
             }
         } catch (\Exception $e) {
             // İstek sırasında bir hata oluşursa
@@ -296,6 +296,7 @@ class PaymentController extends Controller
 
     public function processPayment(Request $request)
     {
+        Session::put('is_visit',false);
         $is3D = $request->has('3d_checkbox');
         if ($is3D) {
             return $this->processPayment3d($request);
@@ -306,8 +307,25 @@ class PaymentController extends Controller
 
     public function error(Request $request)
     {
-        $data = $request->get('status_description');
-        return view('error', compact('data'));
+        if(Session::get('is_visit') === false){
+            Session::put('is_visit',true);
+            return view('error');
+        }
+        else{
+            return redirect()->route('payment.index');
+        }
+    }
+
+    public function success(Request $request)
+    {
+        if(Session::get('is_visit') === false){
+            Session::put('is_visit',true);
+            return view('success');
+        }
+        else{
+            return redirect()->route('payment.index');
+        }
+
     }
 
     public function getPosView()

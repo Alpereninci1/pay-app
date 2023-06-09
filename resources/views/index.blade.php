@@ -85,7 +85,7 @@
                                             </div>
                                             <div class="form-group">
                                                 <label>Cep Telefonu <small>*</small></label>
-                                                <input name="phone" id="phone" type="text" class="form-control" placeholder="Cep Telefonu...">
+                                                <input name="phone" id="phone" type="text" minlength="10" maxlength="13" class="form-control" placeholder="Cep Telefonu...">
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
@@ -119,21 +119,21 @@
                                         <div class="col-sm-12">
                                             <div class="form-group">
                                                 <label>Kart Numarası <small>*</small></label>
-                                                <input name="cc_no" id="cc_no" type="text" class="form-control" placeholder="Kart Numarası...">
+                                                <input name="cc_no" id="cc_no" type="text" maxlength="16" class="form-control" placeholder="Kart Numarası...">
                                             </div>
                                         </div>
                                         <div class="col-sm-12">
                                             <div class="form-group col-sm-4">
                                                 <label>Son Kullanma Ayı <small>*</small></label>
-                                                <input name="expiry_month" id="expiry_month" type="number" class="form-control" placeholder="Son Kullanma Ayı...">
+                                                <input name="expiry_month" id="expiry_month" type="number" max="12" min="1" maxlength="2" class="form-control" placeholder="Son Kullanma Ayı...">
                                             </div>
                                             <div class="form-group col-sm-4">
                                                 <label>Son Kullanma Yılı <small>*</small></label>
-                                                <input name="expiry_year" id="expiry_year" type="number" class="form-control" placeholder="Son Kullanma Yılı...">
+                                                <input name="expiry_year" id="expiry_year" type="number" maxlength="4" class="form-control" placeholder="Son Kullanma Yılı...">
                                             </div>
                                             <div class="form-group col-sm-4">
                                                 <label>Güvenlik Numarası <small>*</small></label>
-                                                <input name="cvv" id="cvv" type="number" class="form-control" placeholder="Güvenlik Numarası...">
+                                                <input name="cvv" id="cvv" type="number" maxlength="3" class="form-control" placeholder="Güvenlik Numarası...">
                                             </div>
                                         </div>
                                         <div class="col-sm-12">
@@ -170,6 +170,8 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script type="text/javascript">
+
+
     $("#3d_checkbox").val(1);
     $("#3d_checkbox").change(function () {
         if (this.checked) {
