@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\HashGeneratorHelper;
+use App\Http\Requests\PaymentRequest;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\File;
@@ -47,7 +48,7 @@ class PaymentController extends Controller
 
     }
 
-    public function processPayment3d(Request $request)
+    public function processPayment3d(PaymentRequest $request)
     {
         if (Session::has('token')) {
             $tokenValue = Session::get('token');
@@ -57,13 +58,10 @@ class PaymentController extends Controller
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
+        $validatedData = $request->validated();
         $total = (float)$request->input('total');
-        $ccHolderName = $request->input('cc_holder_name');
-        $ccNo = $request->input('cc_no');
-        $expiryMonth = $request->input('expiry_month');
-        $expiryYear = $request->input('expiry_year');
-        $currencyCode = Config::get('app.currency_code');
         $installmentsNumber = $request->input('installments_number');
+        $currencyCode = Config::get('app.currency_code');
         $invoiceDescription = Config::get('app.invoice_description');
         $merchantKey = Config::get('app.merchant_key');
         $name = Config::get('app._name');
@@ -72,6 +70,11 @@ class PaymentController extends Controller
         $invoiceId = Session::get('invoice_id');
         $returnUrl = Config::get('app.return_url');
         $cancelUrl = Config::get('app.cancel_url');
+
+        $ccHolderName = $validatedData['cc_holder_name'];
+        $ccNo = $validatedData['cc_no'];
+        $expiryMonth = $validatedData['expiry_month'];
+        $expiryYear = $validatedData['expiry_year'];
 
         $client = new Client();
         try {
@@ -116,7 +119,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function processPayment2d(Request $request)
+    public function processPayment2d(PaymentRequest $request)
     {
         if (Session::has('token')) {
             $tokenValue = Session::get('token');
@@ -134,12 +137,13 @@ class PaymentController extends Controller
 
         $products = [];
 
-        $total = (float)$request->input('total');
-        $installmentsNumber = $request->input('installments_number');
+        $validatedData = $request->validated();
+        $total = (float)$validatedData['total'];
+        $installmentsNumber = $validatedData['installments_number'];
 
         foreach ($items['products'] as $item) {
             $obj = new \stdClass();
-            $obj->price = (float)$request->input('total');
+            $obj->price = $total;
             $obj->name = $item['name'];
             $obj->description = $item['description'];
             $obj->quantity = $item['quantity'];
@@ -147,14 +151,23 @@ class PaymentController extends Controller
             $products[] = $obj;
         }
 
+        $validatedData = $request->validated();
+
+        $ccHolderName = $validatedData['cc_holder_name'];
+        $ccNo = $validatedData['cc_no'];
+        $expiryMonth = $validatedData['expiry_month'];
+        $expiryYear = $validatedData['expiry_year'];
+        $cvv = $validatedData['cvv'];
+
         $client = new Client();
         try {
             $response = $client->post($apiUrl, [
                 'json' => [
-                    'cc_holder_name' => $request->input('cc_holder_name'),
-                    'cc_no' => $request->input('cc_no'),
-                    'expiry_month' => $request->input('expiry_month'),
-                    'expiry_year' => $request->input('expiry_year'),
+                    'cc_holder_name' => $ccHolderName,
+                    'cc_no' => $ccNo,
+                    'expiry_month' => $expiryMonth,
+                    'expiry_year' => $expiryYear,
+                    'cvv' => $cvv,
                     'merchant_key' => Config::get('app.merchant_key'),
                     'currency_code' => Config::get('app.currency_code'),
                     'invoice_description' => Config::get('app.invoice_description'),
@@ -294,7 +307,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function processPayment(Request $request)
+    public function processPayment(PaymentRequest $request)
     {
         Session::put('is_visit',false);
         $is3D = $request->has('3d_checkbox');
