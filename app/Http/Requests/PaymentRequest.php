@@ -28,7 +28,11 @@ class PaymentRequest extends FormRequest
             'expiry_year' => 'required',
             'cvv' => 'nullable',
             'total' => 'required',
-            'installments_number' => 'required'
+            'installments_number' => 'required',
+            'amount' => 'nullable',
+            'phone' => 'nullable',
+            'name' => 'nullable',
+            'tckn' => 'nullable'
         ];
     }
 }

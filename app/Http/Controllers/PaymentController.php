@@ -10,6 +10,7 @@ use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
@@ -37,6 +38,7 @@ class PaymentController extends Controller
                 $expiration = Carbon::now()->addHours(2); // Token süresi 2 saat
                 Session::put('token', $token);
                 Session::put('token_expiration', $expiration);
+                Log::channel('info')->info('Token alınmıştır.');
                 return $responseData;
             } else {
                 return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $responseData['error_code']]);
@@ -75,6 +77,13 @@ class PaymentController extends Controller
         $ccNo = $validatedData['cc_no'];
         $expiryMonth = $validatedData['expiry_month'];
         $expiryYear = $validatedData['expiry_year'];
+
+        $amount = $validatedData['amount'];
+        $name = $validatedData['name'];
+        $phone = $validatedData['phone'];
+        $tckn = $validatedData['tckn'];
+
+        Log::channel('info')->info('Girilen veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn]);
 
         $client = new Client();
         try {
