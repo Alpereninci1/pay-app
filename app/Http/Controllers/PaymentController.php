@@ -78,12 +78,6 @@ class PaymentController extends Controller
         $expiryMonth = $validatedData['expiry_month'];
         $expiryYear = $validatedData['expiry_year'];
 
-        $amount = $validatedData['amount'];
-        $name = $validatedData['name'];
-        $phone = $validatedData['phone'];
-        $tckn = $validatedData['tckn'];
-
-        Log::channel('info')->info('Girilen veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn]);
 
         $client = new Client();
         try {
@@ -319,6 +313,13 @@ class PaymentController extends Controller
     public function processPayment(PaymentRequest $request)
     {
         Session::put('is_visit',false);
+        $validatedData = $request->validated();
+        $amount = $validatedData['amount'];
+        $name = $validatedData['name'];
+        $phone = $validatedData['phone'];
+        $tckn = $validatedData['tckn'];
+
+        Log::channel('info')->info('Girilen veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn]);
         $is3D = $request->has('3d_checkbox');
         if ($is3D) {
             return $this->processPayment3d($request);
