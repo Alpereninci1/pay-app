@@ -30,9 +30,9 @@ class PaymentRequest extends FormRequest
             'total' => 'required',
             'installments_number' => 'required',
             'amount' => 'nullable',
-            'phone' => 'nullable',
+            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
             'name' => 'nullable',
-            'tckn' => 'nullable'
+            'tckn' => 'nullable|max:11'
         ];
     }
 }

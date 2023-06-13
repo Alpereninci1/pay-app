@@ -61,7 +61,26 @@
  * ========================================================= */
 
 
-    jQuery.validator.addMethod("tcno", function (a) { var c = 0, d = 0, e = 0, b = 0, f = 0; if (a.charAt(0) == 0 || a.length != 11) return false; b = parseInt(a.charAt(9), 10); f = parseInt(a.charAt(10), 10); for (i = 0; i < 9; i++) { cd = parseInt(a.charAt(i), 10); i % 2 == 0 ? (c += cd) : (d += cd); e += cd } return (7 * c - d) % 10 == b && (e + b) % 10 == f ? true : false }, "L\u00fctfen ge\u00e7erli bir T.C Kimlik No girin.");
+    jQuery.validator.addMethod("tcno", function (a) {
+        var c = 0, d = 0, e = 0, b = 0, f = 0;
+        if (a.charAt(0) == 0 || a.length != 11)
+            return false;
+        b = parseInt(a.charAt(9), 10);
+        f = parseInt(a.charAt(10), 10);
+        for (i = 0; i < 9; i++) {
+            cd = parseInt(a.charAt(i), 10); i % 2 == 0 ? (c += cd) : (d += cd); e += cd
+        }
+        return (7 * c - d) % 10 == b && (e + b) % 10 == f ? true : false
+    }, "L\u00fctfen ge\u00e7erli bir T.C Kimlik No girin.");
+
+    $.validator.addMethod(
+        "regex",
+        function(value, element, regexp) {
+            var re = /^(\+?\d{1,3}[-.\s]?)?(\d{3}[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
+            return this.optional(element) || re.test(value);
+        },
+        "Lütfen geçerli bir telefon numarası giriniz"
+    );
 
     searchVisible = 0;
     transparent = true;
@@ -81,7 +100,8 @@
                     required: true
                 },
                 phone: {
-                    required: true
+                    required: true,
+                    regex: true,
                 },
                 tckn: {
                     required: true,
@@ -116,7 +136,10 @@
             messages: {
                 name: "Lütfen Ad Soyad alanını giriniz",
                 amount: "Lütfen Tutar alanını giriniz",
-                phone: "Lütfen Cep Telefonu alanını giriniz",
+                phone: {
+                    required: "Lütfen cep telefonu numarası giriniz",
+                    phoneNumber: "Lütfen geçerli bir cep telefonu numarası giriniz"
+                } ,
                 tckn: {
                     required: "Lütfen TCKN alanını giriniz",
                     minlength: "TCKN alanı en az 11 karakter uzunluğunda olmalıdır",

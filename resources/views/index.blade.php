@@ -85,7 +85,7 @@
                                             </div>
                                             <div class="form-group">
                                                 <label>Cep Telefonu <small>*</small></label>
-                                                <input name="phone" id="phone" type="text" minlength="10" maxlength="13" class="form-control" placeholder="Cep Telefonu...">
+                                                <input name="phone" id="phone" type="text" class="form-control" placeholder="Cep Telefonu...">
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
@@ -171,6 +171,13 @@
 
 <script type="text/javascript">
 
+    // $("#phone").change(function() {
+    //     var re = /^(\+?\d{1,3}[-.\s]?)?(\d{3}[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
+    //     var no = $("#phone").val();
+    //     if (!re.test(no) || no.length < 10) {
+    //         console.log('Lütfen geçerli bir telefon numarası giriniz !!');
+    //     }
+    // });
 
     $("#3d_checkbox").val(1);
     $("#3d_checkbox").change(function () {
@@ -256,5 +263,7 @@
             }
         });
     }
+
+
 
 </script>
