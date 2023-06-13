@@ -76,7 +76,7 @@
     $.validator.addMethod(
         "regex",
         function(value, element, regexp) {
-            var re = /^(\+?\d{1,3}[-.\s]?)?(\d{3}[-.\s]?)?\d{3}[-.\s]?\d{4}$/;
+            var re = /^(\+?\d{1,3}[-.\s]?)?(\d{3}[-.\s]?)?\d{3}[-.\s]?\d{3}$/;
             return this.optional(element) || re.test(value);
         },
         "Lütfen geçerli bir telefon numarası giriniz"

@@ -38,13 +38,14 @@ class PaymentController extends Controller
                 $expiration = Carbon::now()->addHours(2); // Token süresi 2 saat
                 Session::put('token', $token);
                 Session::put('token_expiration', $expiration);
-                Log::channel('info')->info('Token alınmıştır.');
+                Log::channel('info')->info('Token alındı.',['Token' => $token , 'Expiration' => $expiration]);
                 return $responseData;
             } else {
+                Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$responseData['error_code']]);
                 return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $responseData['error_code']]);
             }
         }catch (\Exception $e){
-
+            Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$e->getMessage()]);
             return response()->json(['message' => 'Token alırken bir hata oluştu: ' . $e->getMessage()]);
         }
 
@@ -112,12 +113,15 @@ class PaymentController extends Controller
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
+                Log::channel('info')->info('3D Başarılı.');
                 return $response->getBody();
             } else {
+                Log::channel('error')->error('Ödeme işlemi başarısız.');
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
         } catch (\Exception $e) {
             // İstek sırasında bir hata oluşursa
+            Log::channel('error')->error('Ödeme işlemi sırasında bir hata oluştu: ',[$e->getMessage()]);
             return response()->json(['message' => 'Ödeme işlemi sırasında bir hata oluştu: ' . $e->getMessage()]);
         }
     }
@@ -188,12 +192,15 @@ class PaymentController extends Controller
                 ]
             ]);
             if($response->getStatusCode() === 200) {
+                Log::channel('info')->info('2D Başarılı.');
                 return redirect()->route('success');
             } else {
+                Log::channel('error')->error('2D Başarısız.');
                 return redirect()->route('error');
             }
         } catch (\Exception $e) {
             // İstek sırasında bir hata oluşursa
+            Log::channel('error')->error('Ödeme işlemi sırasında bir hata oluştu: ',[$e->getMessage()]);
             return response()->json(['message' => 'Ödeme işlemi sırasında bir hata oluştu: ' . $e->getMessage()]);
         }
     }
@@ -232,7 +239,11 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
-        $this->getToken(); // token aldığımız ilk yer
+        if (Session::has('token')) {
+            $tokenValue = Session::get('token');
+        } else {
+            $this->getToken();
+        }
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
@@ -258,11 +269,14 @@ class PaymentController extends Controller
             ]);
             if($response->getStatusCode() === 200) {
                 $responseData = json_decode($response->getBody(),true);
+                Log::channel('info')->info('Get Pos Başarılı:',[$responseData]);
                 return $responseData;
             }else {
+                Log::channel('error')->error('İşlem başarısız.');
                 return response()->json(['message' => 'İşlem başarısız.']);
             }
         }catch (\Exception $e){
+            Log::channel('error')->error('İşlem sırasında bir hata oluştu: ',[$e->getMessage()]);
             return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
         }
     }
@@ -318,12 +332,23 @@ class PaymentController extends Controller
         $name = $validatedData['name'];
         $phone = $validatedData['phone'];
         $tckn = $validatedData['tckn'];
+        $ccHolderName = $validatedData['cc_holder_name'];
+        $ccNo = $validatedData['cc_no'];
+        $expiryMonth = $validatedData['expiry_month'];
+        $expiryYear = $validatedData['expiry_year'];
+        $cvv = $validatedData['cvv'];
+        $installmentNumbers = $validatedData['installments_number'];
 
-        Log::channel('info')->info('Girilen veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn]);
+        Log::channel('info')->info('Girilen Veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn]);
+
+        Log::channel('info')->info('Kart Bilgiler:', ['Kart Üzerindeki İsim: ' => $ccHolderName, 'Kart Numarası: ' => $ccNo, 'Ay: ' => $expiryMonth, 'Yıl: ' => $expiryYear , 'CVV' => $cvv, 'Taksit Sayısı' => $installmentNumbers]);
+
         $is3D = $request->has('3d_checkbox');
         if ($is3D) {
+            Log::channel('info')->info('3D Seçildi.');
             return $this->processPayment3d($request);
         } else {
+            Log::channel('info')->info('2D Seçildi.');
             return $this->processPayment2d($request);
         }
     }
