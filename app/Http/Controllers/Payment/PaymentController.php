@@ -1,19 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Payment;
 
 use App\Helpers\HashGeneratorHelper;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\PaymentRequest;
+use App\Requests\Common\GetTokenRequest;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
-use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\View;
 
 class PaymentController extends Controller
 {
@@ -264,7 +263,7 @@ class PaymentController extends Controller
                 ],
                 'headers' => [
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . Session::get('token'),
+                    'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
             if($response->getStatusCode() === 200) {

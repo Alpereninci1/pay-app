@@ -17,9 +17,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('get-pos',[\App\Http\Controllers\PaymentController::class,'getPos'])->name('payment.get-pos');
-Route::get('index',[\App\Http\Controllers\PaymentController::class,'index'])->name('payment.index');
-Route::post('payment',[\App\Http\Controllers\PaymentController::class,'processPayment'])->name('payment');
-Route::get('get-token',[\App\Http\Controllers\PaymentController::class,'getToken'])->name('get-token');
-Route::get('success',[\App\Http\Controllers\PaymentController::class,'success'])->name('success');
-Route::get('error',[\App\Http\Controllers\PaymentController::class,'error'])->name('error');
+Route::post('get-pos',[\App\Http\Controllers\Payment\PaymentController::class,'getPos'])->name('payment.get-pos');
+Route::get('index',[\App\Http\Controllers\Payment\PaymentController::class,'index'])->name('payment.index');
+Route::post('payment',[\App\Http\Controllers\Payment\PaymentController::class,'processPayment'])->name('payment');
+Route::get('get-token',[\App\Http\Controllers\Payment\PaymentController::class,'getToken'])->name('get-token');
+Route::get('success',[\App\Http\Controllers\Payment\PaymentController::class,'success'])->name('success');
+Route::get('error',[\App\Http\Controllers\Payment\PaymentController::class,'error'])->name('error');
