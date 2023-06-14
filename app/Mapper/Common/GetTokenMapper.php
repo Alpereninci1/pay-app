@@ -15,13 +15,15 @@ class GetTokenMapper implements IMapper
     {
         $getTokenResponse = new GetTokenResponse();
 
-        $getTokenResponse->setStatusCode($response->status_code);
-        $getTokenResponse->setStatusDescription($response->status_description);
+        $responseData = json_decode($response->getBody(), true);
+
+        $getTokenResponse->setStatusCode($responseData['status_code']);
+        $getTokenResponse->setStatusDescription($responseData['status_description']);
 
         $tokenResponse = new TokenResponse();
-        $tokenResponse->setToken($response->data->token);
-        $tokenResponse->setExpiredAt($response->data->expired_at);
-        $tokenResponse->setIs3d($response->data->is_3d);
+        $tokenResponse->setToken($responseData['data']['token']);
+        $tokenResponse->setExpiredAt($responseData['data']['expires_at']);
+        $tokenResponse->setIs3d($responseData['data']['is_3d']);
 
         $getTokenResponse->setData($tokenResponse);
 

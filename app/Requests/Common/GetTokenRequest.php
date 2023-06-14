@@ -27,9 +27,9 @@ class GetTokenRequest
     /**
      * @param string $app_secret
      */
-    public function setAppSecret(): void
+    public function setAppSecret(string $app_secret): void
     {
-        $this->app_secret = Config::get('app.app_secret');
+        $this->app_secret = $app_secret;
     }
 
     /**
@@ -43,9 +43,9 @@ class GetTokenRequest
     /**
      * @param string $app_id
      */
-    public function setAppId(): void
+    public function setAppId(string $app_id): void
     {
-        $this->app_id = Config::get('app.app_id');
+        $this->app_id = $app_id;
     }
 
     public function getTokenData(): string

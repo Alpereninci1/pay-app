@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Payment;
 use App\Helpers\HashGeneratorHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PaymentRequest;
+use App\Mapper\Common\GetTokenMapper;
 use App\Requests\Common\GetTokenRequest;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -16,47 +17,58 @@ use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
+    private GetTokenRequest $getTokenRequest;
+    public function __construct(GetTokenRequest $getTokenRequest)
+    {
+        $this->getTokenRequest = $getTokenRequest;
+    }
     public function getToken()
     {
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/token';
 
         $app_id = Config::get('app.app_id');
         $app_secret = Config::get('app.app_secret');
+
+        $this->getTokenRequest->setAppId($app_id);
+        $this->getTokenRequest->setAppSecret($app_secret);
+
+        $body = $this->getTokenRequest->getTokenData();
         $client = new Client();
-
-        try {
-            $response = $client->post($apiUrl, [
-                'json' => [
-                    'app_id' => $app_id,
-                    'app_secret' => $app_secret
-                ]
-            ]);
-            $responseData = json_decode($response->getBody(), true);
-            $token = $responseData['data']['token'];
-            if ($responseData['status_code'] === 100) {
-                $expiration = Carbon::now()->addHours(2); // Token süresi 2 saat
-                Session::put('token', $token);
-                Session::put('token_expiration', $expiration);
-                Log::channel('info')->info('Token alındı.',['Token' => $token , 'Expiration' => $expiration]);
-                return $responseData;
-            } else {
-                Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$responseData['error_code']]);
-                return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $responseData['error_code']]);
-            }
-        }catch (\Exception $e){
-            Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$e->getMessage()]);
-            return response()->json(['message' => 'Token alırken bir hata oluştu: ' . $e->getMessage()]);
+        if (Session::has('token') ) {
+            return Session::get('token');
         }
-
+        else{
+            try {
+                $response = $client->post($apiUrl, [
+                    'body' => $body,
+                    'headers' => [
+                        'Content-Type' => 'application/json',
+                    ]
+                ]);
+                $data = GetTokenMapper::map($response);
+                $token = $data->getData()->getToken();
+                $dataArray = GetTokenMapper::map($response)->toArray();
+                $status_code = $data->getStatusCode();
+                if ($status_code === 100) {
+                    $expiration = Carbon::now()->addHours(5); // Token süresi 2 saat
+                    Log::channel('info')->info('Token alındı.',['Token' => $token]);
+                    Session::put('token',$token);
+                    Session::put('token_expiration', $expiration);
+                    Session::save();
+                    return $dataArray;
+                } else {
+                    Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$status_code]);
+                    return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $status_code]);
+                }
+            }catch (\Exception $e){
+                Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$e->getMessage()]);
+                return response()->json(['message' => 'Token alırken bir hata oluştu: ' . $e->getMessage()]);
+            }
+        }
     }
 
     public function processPayment3d(PaymentRequest $request)
     {
-        if (Session::has('token')) {
-            $tokenValue = Session::get('token');
-        } else {
-            $this->getToken();
-        }
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
@@ -108,7 +120,7 @@ class PaymentController extends Controller
                     ]),
                 ],
                 'headers' => [
-                    'Authorization' => 'Bearer ' . $tokenValue
+                    'Authorization' => 'Bearer ' . Session::get('token')
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
@@ -127,11 +139,6 @@ class PaymentController extends Controller
 
     public function processPayment2d(PaymentRequest $request)
     {
-        if (Session::has('token')) {
-            $tokenValue = Session::get('token');
-        } else {
-            $this->getToken();
-        }
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart2D';
 
@@ -187,7 +194,7 @@ class PaymentController extends Controller
                 ],
                 'headers' => [
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $tokenValue,
+                    'Authorization' => 'Bearer ' . Session::get('token'),
                 ]
             ]);
             if($response->getStatusCode() === 200) {
@@ -204,14 +211,8 @@ class PaymentController extends Controller
         }
     }
 
-    public function getInstallment(Request $request)
+    public function getInstallment()
     {
-        if (Session::has('token')) {
-            $tokenValue = Session::get('token');
-        } else {
-            $this->getToken();
-        }
-
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/installments';
         $client = new Client();
         $merchant_key = Config::get('app.merchant_key');
@@ -222,7 +223,7 @@ class PaymentController extends Controller
                 ],
                 'headers' => [
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $tokenValue,
+                    'Authorization' => 'Bearer ' . Session::get('token'),
                 ]
             ]);
             if($response->getStatusCode() === 200) {
@@ -238,11 +239,8 @@ class PaymentController extends Controller
 
     public function getPos(Request $request)
     {
-        if (Session::has('token')) {
-            $tokenValue = Session::get('token');
-        } else {
-            $this->getToken();
-        }
+        $this->getToken();
+
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
@@ -263,7 +261,7 @@ class PaymentController extends Controller
                 ],
                 'headers' => [
                     'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $tokenValue,
+                    'Authorization' => 'Bearer ' . Session::get('token'),
                 ]
             ]);
             if($response->getStatusCode() === 200) {
@@ -280,48 +278,48 @@ class PaymentController extends Controller
         }
     }
 
-    public function payByCardTokenNonSecure(Request $request)
-    {
-        $tokenValue = Session::get('token');
-        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/payByCardTokenNonSecure';
-        $filePath = "products.json";
-
-        $json = Storage::get($filePath);
-
-        $items = json_decode($json, true);
-        $products = '';
-        foreach ($items as $item){
-            $products = $item;
-        }
-
-        $client = new Client();
-        $rawData = $request->getContent();
-        $dataArray = json_decode($rawData, true);
-        $merchant_key = Config::get('app.merchant_key');
-        $dataArray['merchant_key'] = $merchant_key;
-        $dataArray['hash_key'] = HashGeneratorHelper::hashGenerator();
-        $dataArray['invoice_id'] = Session::get('invoice_id');
-        $dataArray['items'] = $products;
-        $jsonData = json_encode($dataArray);
-
-        try {
-            $response = $client->post($apiUrl,[
-                'body' => $jsonData,
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $tokenValue,
-                ]
-            ]);
-            if($response->getStatusCode() === 200) {
-                $responseData = json_decode($response->getBody(),true);
-                return $responseData;
-            }else {
-                return response()->json(['message' => 'İşlem başarısız.']);
-            }
-        }catch (\Exception $e){
-            return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
-        }
-    }
+//    public function payByCardTokenNonSecure(Request $request)
+//    {
+//        $tokenValue = Session::get('token');
+//        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/payByCardTokenNonSecure';
+//        $filePath = "products.json";
+//
+//        $json = Storage::get($filePath);
+//
+//        $items = json_decode($json, true);
+//        $products = '';
+//        foreach ($items as $item){
+//            $products = $item;
+//        }
+//
+//        $client = new Client();
+//        $rawData = $request->getContent();
+//        $dataArray = json_decode($rawData, true);
+//        $merchant_key = Config::get('app.merchant_key');
+//        $dataArray['merchant_key'] = $merchant_key;
+//        $dataArray['hash_key'] = HashGeneratorHelper::hashGenerator();
+//        $dataArray['invoice_id'] = Session::get('invoice_id');
+//        $dataArray['items'] = $products;
+//        $jsonData = json_encode($dataArray);
+//
+//        try {
+//            $response = $client->post($apiUrl,[
+//                'body' => $jsonData,
+//                'headers' => [
+//                    'Content-Type' => 'application/json',
+//                    'Authorization' => 'Bearer ' . $tokenValue,
+//                ]
+//            ]);
+//            if($response->getStatusCode() === 200) {
+//                $responseData = json_decode($response->getBody(),true);
+//                return $responseData;
+//            }else {
+//                return response()->json(['message' => 'İşlem başarısız.']);
+//            }
+//        }catch (\Exception $e){
+//            return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
+//        }
+//    }
 
     public function processPayment(PaymentRequest $request)
     {
