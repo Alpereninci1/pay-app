@@ -75,7 +75,7 @@
 
     $.validator.addMethod(
         "regex",
-        function(value, element, regexp) {
+        function(value, element) {
             var re = /^(\+?\d{1,3}[-.\s]?)?(\d{3}[-.\s]?)?\d{3}[-.\s]?\d{3}$/;
             return this.optional(element) || re.test(value);
         },

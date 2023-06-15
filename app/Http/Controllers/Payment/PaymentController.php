@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PaymentRequest;
 use App\Mapper\Common\GetTokenMapper;
 use App\Requests\Common\GetTokenRequest;
+use App\Requests\Payment\ItemRequest;
+use App\Requests\Payment\Payment2dRequest;
+use App\Requests\Payment\Payment3dRequest;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -18,9 +21,16 @@ use Illuminate\Support\Facades\Storage;
 class PaymentController extends Controller
 {
     private GetTokenRequest $getTokenRequest;
-    public function __construct(GetTokenRequest $getTokenRequest)
+    private Payment2dRequest $payment2dRequest;
+    private Payment3dRequest $payment3dRequest;
+    private ItemRequest $itemRequest;
+
+    public function __construct(GetTokenRequest $getTokenRequest,Payment2dRequest $payment2dRequest,Payment3dRequest $payment3dRequest,ItemRequest $itemRequest)
     {
         $this->getTokenRequest = $getTokenRequest;
+        $this->payment2dRequest = $payment2dRequest;
+        $this->payment3dRequest = $payment3dRequest;
+        $this->itemRequest = $itemRequest;
     }
     public function getToken()
     {
@@ -69,55 +79,78 @@ class PaymentController extends Controller
 
     public function processPayment3d(PaymentRequest $request)
     {
-
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
-        $validatedData = $request->validated();
-        $total = (float)$request->input('total');
-        $installmentsNumber = $request->input('installments_number');
-        $currencyCode = Config::get('app.currency_code');
-        $invoiceDescription = Config::get('app.invoice_description');
-        $merchantKey = Config::get('app.merchant_key');
-        $name = Config::get('app._name');
-        $surname = Config::get('app.surname');
-        $hashKey = HashGeneratorHelper::hashGenerator($total,$installmentsNumber);
-        $invoiceId = Session::get('invoice_id');
-        $returnUrl = Config::get('app.return_url');
-        $cancelUrl = Config::get('app.cancel_url');
 
+        $validatedData = $request->validated();
         $ccHolderName = $validatedData['cc_holder_name'];
         $ccNo = $validatedData['cc_no'];
         $expiryMonth = $validatedData['expiry_month'];
         $expiryYear = $validatedData['expiry_year'];
+        $total = (float)$validatedData['total'];
+        $installmentsNumber = $validatedData['installments_number'];
+        $description = "asdasd";
+
+
+        $this->payment3dRequest->setCcHolderName($ccHolderName);
+        $this->payment3dRequest->setCcNo($ccNo);
+        $this->payment3dRequest->setExpiryMonth($expiryMonth);
+        $this->payment3dRequest->setExpiryYear($expiryYear);
+        $this->payment3dRequest->setMerchantKey(Config::get('app.merchant_key'));
+        $this->payment3dRequest->setCurrencyCode(Config::get('app.currency_code'));
+        $this->payment3dRequest->setInvoiceDescription(Config::get('app.invoice_description'));
+        $this->payment3dRequest->setTotal($total);
+        $this->payment3dRequest->setInstallmentsNumber($installmentsNumber);
+        $this->payment3dRequest->setName(Config::get('app._name'));
+        $this->payment3dRequest->setSurname(Config::get('app.surname'));
+        $this->payment3dRequest->setHashKey(HashGeneratorHelper::hashGenerator($total,$installmentsNumber));
+        $this->payment3dRequest->setInvoiceId(Session::get('invoice_id'));
+        $this->payment3dRequest->setReturnUrl(Config::get('app.return_url'));
+        $this->payment3dRequest->setCancelUrl(Config::get('app.cancel_url'));
+
+        $items = [
+            [
+                'name' => 'item 1',
+                'price' => $total,
+                'quantity' => 1,
+                'description' => 'asfasfasfas'
+            ]
+        ];
+
+        $itemRequestData = [];
+
+        foreach ($items as $item) {
+            $itemRequest = new ItemRequest();
+            $itemRequest->setName($item['name']);
+            $itemRequest->setPrice($item['price']);
+            $itemRequest->setQuantity($item['quantity']);
+            $itemRequest->setDescription($item['description']);
+
+            $itemRequestData[] = $itemRequest;
+        }
+        $this->payment3dRequest->setItems($itemRequestData);
 
 
         $client = new Client();
         try {
             $response = $client->post($apiUrl, [
                 'form_params' => [
-                    'cc_holder_name' => $ccHolderName,
-                    'cc_no' => $ccNo,
-                    'expiry_month' => $expiryMonth,
-                    'expiry_year' => $expiryYear,
-                    'currency_code' => $currencyCode,
-                    'installments_number' => $installmentsNumber,
-                    'invoice_id' => $invoiceId,
-                    'invoice_description' => $invoiceDescription,
-                    'total' => $total,
-                    'merchant_key' => $merchantKey,
-                    'name' => $name,
-                    'surname' => $surname,
-                    'hash_key' => $hashKey,
-                    'return_url' => $returnUrl,
-                    'cancel_url' => $cancelUrl,
-                    'items' => json_encode([
-                        [
-                            'name' => 'item 1',
-                            'price' => $total,
-                            'quantity' => 1,
-                            'description' => 'asfasfasfas'
-                        ]
-                    ]),
+                    'cc_holder_name' => $this->payment3dRequest->getCcHolderName(),
+                    'cc_no' => $this->payment3dRequest->getCcNo(),
+                    'expiry_month' => $this->payment3dRequest->getExpiryMonth(),
+                    'expiry_year' => $this->payment3dRequest->getExpiryYear(),
+                    'currency_code' => $this->payment3dRequest->getCurrencyCode(),
+                    'installments_number' => $this->payment3dRequest->getInstallmentsNumber(),
+                    'invoice_id' => $this->payment3dRequest->getInvoiceId(),
+                    'invoice_description' => $this->payment3dRequest->getInvoiceDescription(),
+                    'total' => $this->payment3dRequest->getTotal(),
+                    'merchant_key' => $this->payment3dRequest->getMerchantKey(),
+                    'name' => $this->payment3dRequest->getName(),
+                    'surname' => $this->payment3dRequest->getSurname(),
+                    'hash_key' => $this->payment3dRequest->getHashKey(),
+                    'return_url' => $this->payment3dRequest->getReturnUrl(),
+                    'cancel_url' => $this->payment3dRequest->getCancelUrl(),
+                    'items' => $this->payment3dRequest->getItems(),
                 ],
                 'headers' => [
                     'Authorization' => 'Bearer ' . Session::get('token')
@@ -127,7 +160,7 @@ class PaymentController extends Controller
                 Log::channel('info')->info('3D Başarılı.');
                 return $response->getBody();
             } else {
-                Log::channel('error')->error('Ödeme işlemi başarısız.');
+                Log::channel('error')->error('3D Ödeme işlemi başarısız.');
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
         } catch (\Exception $e) {
@@ -151,9 +184,9 @@ class PaymentController extends Controller
         $products = [];
 
         $validatedData = $request->validated();
+
         $total = (float)$validatedData['total'];
         $installmentsNumber = $validatedData['installments_number'];
-
         foreach ($items['products'] as $item) {
             $obj = new \stdClass();
             $obj->price = $total;
@@ -164,34 +197,34 @@ class PaymentController extends Controller
             $products[] = $obj;
         }
 
-        $validatedData = $request->validated();
-
         $ccHolderName = $validatedData['cc_holder_name'];
         $ccNo = $validatedData['cc_no'];
         $expiryMonth = $validatedData['expiry_month'];
         $expiryYear = $validatedData['expiry_year'];
         $cvv = $validatedData['cvv'];
 
+        $this->payment2dRequest->setCcHolderName($ccHolderName);
+        $this->payment2dRequest->setCcNo($ccNo);
+        $this->payment2dRequest->setExpiryMonth($expiryMonth);
+        $this->payment2dRequest->setExpiryYear($expiryYear);
+        $this->payment2dRequest->setCvv($cvv);
+        $this->payment2dRequest->setMerchantKey(Config::get('app.merchant_key'));
+        $this->payment2dRequest->setCurrencyCode(Config::get('app.currency_code'));
+        $this->payment2dRequest->setInvoiceDescription(Config::get('app.invoice_description'));
+        $this->payment2dRequest->setTotal($total);
+        $this->payment2dRequest->setInstallmentsNumber($installmentsNumber);
+        $this->payment2dRequest->setName(Config::get('app._name'));
+        $this->payment2dRequest->setSurname(Config::get('app.surname'));
+        $this->payment2dRequest->setHashKey(HashGeneratorHelper::hashGenerator($total,$installmentsNumber));
+        $this->payment2dRequest->setInvoiceId(Session::get('invoice_id'));
+        $this->payment2dRequest->setItems($products);
+
+        $body = $this->payment2dRequest->getData();
+
         $client = new Client();
         try {
             $response = $client->post($apiUrl, [
-                'json' => [
-                    'cc_holder_name' => $ccHolderName,
-                    'cc_no' => $ccNo,
-                    'expiry_month' => $expiryMonth,
-                    'expiry_year' => $expiryYear,
-                    'cvv' => $cvv,
-                    'merchant_key' => Config::get('app.merchant_key'),
-                    'currency_code' => Config::get('app.currency_code'),
-                    'invoice_description' => Config::get('app.invoice_description'),
-                    'total' => $total,
-                    'installments_number' => $installmentsNumber,
-                    'name' => Config::get('app.name'),
-                    'surname' => Config::get('app.surname'),
-                    'hash_key' => HashGeneratorHelper::hashGenerator($total,$installmentsNumber),
-                    'invoice_id' => Session::get('invoice_id'),
-                    'items' => $products
-                ],
+                'body' => $body,
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . Session::get('token'),
@@ -240,7 +273,7 @@ class PaymentController extends Controller
     public function getPos(Request $request)
     {
         $this->getToken();
-
+        $tokenValue = Session::get('token');
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
 
@@ -260,8 +293,7 @@ class PaymentController extends Controller
                     'is_2d' => $is_2d
                 ],
                 'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . Session::get('token'),
+                    'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
             if($response->getStatusCode() === 200) {
@@ -350,7 +382,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function error(Request $request)
+    public function error()
     {
         if(Session::get('is_visit') === false){
             Session::put('is_visit',true);
@@ -361,7 +393,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function success(Request $request)
+    public function success()
     {
         if(Session::get('is_visit') === false){
             Session::put('is_visit',true);
@@ -373,10 +405,6 @@ class PaymentController extends Controller
 
     }
 
-    public function getPosView()
-    {
-        return view('get-pos-view');
-    }
 
     public function index()
     {

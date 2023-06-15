@@ -23,3 +23,5 @@ Route::post('payment',[\App\Http\Controllers\Payment\PaymentController::class,'p
 Route::get('get-token',[\App\Http\Controllers\Payment\PaymentController::class,'getToken'])->name('get-token');
 Route::get('success',[\App\Http\Controllers\Payment\PaymentController::class,'success'])->name('success');
 Route::get('error',[\App\Http\Controllers\Payment\PaymentController::class,'error'])->name('error');
+Route::get('get-installments',[\App\Http\Controllers\Payment\PaymentController::class,'getInstallment']);
+
