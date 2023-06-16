@@ -89,8 +89,6 @@ class PaymentController extends Controller
         $expiryYear = $validatedData['expiry_year'];
         $total = (float)$validatedData['total'];
         $installmentsNumber = $validatedData['installments_number'];
-        $description = "asdasd";
-
 
         $this->payment3dRequest->setCcHolderName($ccHolderName);
         $this->payment3dRequest->setCcNo($ccNo);
@@ -120,16 +118,19 @@ class PaymentController extends Controller
         $itemRequestData = [];
 
         foreach ($items as $item) {
-            $itemRequest = new ItemRequest();
-            $itemRequest->setName($item['name']);
-            $itemRequest->setPrice($item['price']);
-            $itemRequest->setQuantity($item['quantity']);
-            $itemRequest->setDescription($item['description']);
+            $itemData = [
+                'name' => $item['name'],
+                'price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'description' => $item['description']
+            ];
 
-            $itemRequestData[] = $itemRequest;
+            $itemRequestData[] = $itemData;
         }
+
         $this->payment3dRequest->setItems($itemRequestData);
 
+        $itemJson = json_encode($this->payment3dRequest->getItems());
 
         $client = new Client();
         try {
@@ -150,7 +151,7 @@ class PaymentController extends Controller
                     'hash_key' => $this->payment3dRequest->getHashKey(),
                     'return_url' => $this->payment3dRequest->getReturnUrl(),
                     'cancel_url' => $this->payment3dRequest->getCancelUrl(),
-                    'items' => $this->payment3dRequest->getItems(),
+                    'items' => $itemJson,
                 ],
                 'headers' => [
                     'Authorization' => 'Bearer ' . Session::get('token')
