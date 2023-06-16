@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Payment;
 
 use App\Helpers\HashGeneratorHelper;
+use App\Helpers\RequestHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PaymentRequest;
 use App\Mapper\Common\GetTokenMapper;
@@ -23,14 +24,11 @@ class PaymentController extends Controller
     private GetTokenRequest $getTokenRequest;
     private Payment2dRequest $payment2dRequest;
     private Payment3dRequest $payment3dRequest;
-    private ItemRequest $itemRequest;
-
-    public function __construct(GetTokenRequest $getTokenRequest,Payment2dRequest $payment2dRequest,Payment3dRequest $payment3dRequest,ItemRequest $itemRequest)
+    public function __construct(GetTokenRequest $getTokenRequest,Payment2dRequest $payment2dRequest,Payment3dRequest $payment3dRequest)
     {
         $this->getTokenRequest = $getTokenRequest;
         $this->payment2dRequest = $payment2dRequest;
         $this->payment3dRequest = $payment3dRequest;
-        $this->itemRequest = $itemRequest;
     }
     public function getToken()
     {
@@ -82,28 +80,9 @@ class PaymentController extends Controller
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
         $validatedData = $request->validated();
-        $ccHolderName = $validatedData['cc_holder_name'];
-        $ccNo = $validatedData['cc_no'];
-        $expiryMonth = $validatedData['expiry_month'];
-        $expiryYear = $validatedData['expiry_year'];
         $total = (float)$validatedData['total'];
-        $installmentsNumber = $validatedData['installments_number'];
 
-        $this->payment3dRequest->setCcHolderName($ccHolderName);
-        $this->payment3dRequest->setCcNo($ccNo);
-        $this->payment3dRequest->setExpiryMonth($expiryMonth);
-        $this->payment3dRequest->setExpiryYear($expiryYear);
-        $this->payment3dRequest->setMerchantKey(Config::get('app.merchant_key'));
-        $this->payment3dRequest->setCurrencyCode(Config::get('app.currency_code'));
-        $this->payment3dRequest->setInvoiceDescription(Config::get('app.invoice_description'));
-        $this->payment3dRequest->setTotal($total);
-        $this->payment3dRequest->setInstallmentsNumber($installmentsNumber);
-        $this->payment3dRequest->setName(Config::get('app._name'));
-        $this->payment3dRequest->setSurname(Config::get('app.surname'));
-        $this->payment3dRequest->setHashKey(HashGeneratorHelper::hashGenerator($total,$installmentsNumber));
-        $this->payment3dRequest->setInvoiceId(Session::get('invoice_id'));
-        $this->payment3dRequest->setReturnUrl(Config::get('app.return_url'));
-        $this->payment3dRequest->setCancelUrl(Config::get('app.cancel_url'));
+        RequestHelper::payment3dRequest($this->payment3dRequest,$validatedData);
 
         $items = [
             [
@@ -177,12 +156,8 @@ class PaymentController extends Controller
 
         $validatedData = $request->validated();
         $total = (float)$validatedData['total'];
-        $installmentsNumber = $validatedData['installments_number'];
-        $ccHolderName = $validatedData['cc_holder_name'];
-        $ccNo = $validatedData['cc_no'];
-        $expiryMonth = $validatedData['expiry_month'];
-        $expiryYear = $validatedData['expiry_year'];
-        $cvv = $validatedData['cvv'];
+
+        RequestHelper::payment2dRequest($this->payment2dRequest,$validatedData);
 
         $items = [
             [
@@ -206,24 +181,7 @@ class PaymentController extends Controller
             $itemRequestData[] = $itemData;
         }
 
-        $this->payment3dRequest->setItems($itemRequestData);
-
-
-        $this->payment2dRequest->setCcHolderName($ccHolderName);
-        $this->payment2dRequest->setCcNo($ccNo);
-        $this->payment2dRequest->setExpiryMonth($expiryMonth);
-        $this->payment2dRequest->setExpiryYear($expiryYear);
-        $this->payment2dRequest->setCvv($cvv);
-        $this->payment2dRequest->setMerchantKey(Config::get('app.merchant_key'));
-        $this->payment2dRequest->setCurrencyCode(Config::get('app.currency_code'));
-        $this->payment2dRequest->setInvoiceDescription(Config::get('app.invoice_description'));
-        $this->payment2dRequest->setTotal($total);
-        $this->payment2dRequest->setInstallmentsNumber($installmentsNumber);
-        $this->payment2dRequest->setName(Config::get('app._name'));
-        $this->payment2dRequest->setSurname(Config::get('app.surname'));
-        $this->payment2dRequest->setHashKey(HashGeneratorHelper::hashGenerator($total,$installmentsNumber));
-        $this->payment2dRequest->setInvoiceId(Session::get('invoice_id'));
-        $this->payment2dRequest->setItems($this->payment3dRequest->getItems());
+        $this->payment2dRequest->setItems($itemRequestData);
 
         $body = $this->payment2dRequest->getData();
 
@@ -316,48 +274,6 @@ class PaymentController extends Controller
         }
     }
 
-//    public function payByCardTokenNonSecure(Request $request)
-//    {
-//        $tokenValue = Session::get('token');
-//        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/payByCardTokenNonSecure';
-//        $filePath = "products.json";
-//
-//        $json = Storage::get($filePath);
-//
-//        $items = json_decode($json, true);
-//        $products = '';
-//        foreach ($items as $item){
-//            $products = $item;
-//        }
-//
-//        $client = new Client();
-//        $rawData = $request->getContent();
-//        $dataArray = json_decode($rawData, true);
-//        $merchant_key = Config::get('app.merchant_key');
-//        $dataArray['merchant_key'] = $merchant_key;
-//        $dataArray['hash_key'] = HashGeneratorHelper::hashGenerator();
-//        $dataArray['invoice_id'] = Session::get('invoice_id');
-//        $dataArray['items'] = $products;
-//        $jsonData = json_encode($dataArray);
-//
-//        try {
-//            $response = $client->post($apiUrl,[
-//                'body' => $jsonData,
-//                'headers' => [
-//                    'Content-Type' => 'application/json',
-//                    'Authorization' => 'Bearer ' . $tokenValue,
-//                ]
-//            ]);
-//            if($response->getStatusCode() === 200) {
-//                $responseData = json_decode($response->getBody(),true);
-//                return $responseData;
-//            }else {
-//                return response()->json(['message' => 'İşlem başarısız.']);
-//            }
-//        }catch (\Exception $e){
-//            return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
-//        }
-//    }
 
     public function processPayment(PaymentRequest $request)
     {
@@ -411,9 +327,9 @@ class PaymentController extends Controller
 
     }
 
-
     public function index()
     {
         return view('index');
     }
+
 }
