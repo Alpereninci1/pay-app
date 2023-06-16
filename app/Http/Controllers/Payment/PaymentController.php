@@ -81,7 +81,6 @@ class PaymentController extends Controller
     {
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
-
         $validatedData = $request->validated();
         $ccHolderName = $validatedData['cc_holder_name'];
         $ccNo = $validatedData['cc_no'];
@@ -176,33 +175,39 @@ class PaymentController extends Controller
 
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart2D';
 
-        $filePath = "products.json";
-
-        $json = Storage::get($filePath);
-
-        $items = json_decode($json, true);
-
-        $products = [];
-
         $validatedData = $request->validated();
-
         $total = (float)$validatedData['total'];
         $installmentsNumber = $validatedData['installments_number'];
-        foreach ($items['products'] as $item) {
-            $obj = new \stdClass();
-            $obj->price = $total;
-            $obj->name = $item['name'];
-            $obj->description = $item['description'];
-            $obj->quantity = $item['quantity'];
-
-            $products[] = $obj;
-        }
-
         $ccHolderName = $validatedData['cc_holder_name'];
         $ccNo = $validatedData['cc_no'];
         $expiryMonth = $validatedData['expiry_month'];
         $expiryYear = $validatedData['expiry_year'];
         $cvv = $validatedData['cvv'];
+
+        $items = [
+            [
+                'name' => 'item 1',
+                'price' => $total,
+                'quantity' => 1,
+                'description' => 'asfasfasfas'
+            ]
+        ];
+
+        $itemRequestData = [];
+
+        foreach ($items as $item) {
+            $itemData = [
+                'name' => $item['name'],
+                'price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'description' => $item['description']
+            ];
+
+            $itemRequestData[] = $itemData;
+        }
+
+        $this->payment3dRequest->setItems($itemRequestData);
+
 
         $this->payment2dRequest->setCcHolderName($ccHolderName);
         $this->payment2dRequest->setCcNo($ccNo);
@@ -218,7 +223,7 @@ class PaymentController extends Controller
         $this->payment2dRequest->setSurname(Config::get('app.surname'));
         $this->payment2dRequest->setHashKey(HashGeneratorHelper::hashGenerator($total,$installmentsNumber));
         $this->payment2dRequest->setInvoiceId(Session::get('invoice_id'));
-        $this->payment2dRequest->setItems($products);
+        $this->payment2dRequest->setItems($this->payment3dRequest->getItems());
 
         $body = $this->payment2dRequest->getData();
 
