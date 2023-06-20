@@ -134,6 +134,7 @@ return [
     'return_url' => env('RETURN_URL'),
     'cancel_url' => env('CANCEL_URL'),
     'total' => env('TOTAL'),
+    'is_2d' => env('IS_2D'),
     'cipher' => 'AES-256-CBC',
 
     /*

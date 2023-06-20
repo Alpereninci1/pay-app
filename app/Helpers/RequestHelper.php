@@ -13,15 +13,7 @@ class RequestHelper
         $payment3dRequest->setCcNo($data['cc_no']);
         $payment3dRequest->setExpiryMonth($data['expiry_month']);
         $payment3dRequest->setExpiryYear($data['expiry_year']);
-        $payment3dRequest->setMerchantKey(Config::get('app.merchant_key'));
-        $payment3dRequest->setCurrencyCode(Config::get('app.currency_code'));
-        $payment3dRequest->setInvoiceDescription(Config::get('app.invoice_description'));
-        $payment3dRequest->setTotal((float)$data['total']);
-        $payment3dRequest->setInstallmentsNumber($data['installments_number']);
-        $payment3dRequest->setName(Config::get('app._name'));
-        $payment3dRequest->setSurname(Config::get('app.surname'));
-        $payment3dRequest->setHashKey(HashGeneratorHelper::hashGenerator((float)$data['total'], $data['installments_number']));
-        $payment3dRequest->setInvoiceId(Session::get('invoice_id'));
+        self::extracted($payment3dRequest, $data);
         $payment3dRequest->setReturnUrl(Config::get('app.return_url'));
         $payment3dRequest->setCancelUrl(Config::get('app.cancel_url'));
     }
@@ -33,15 +25,35 @@ class RequestHelper
         $payment2dRequest->setExpiryMonth($data['expiry_month']);
         $payment2dRequest->setExpiryYear($data['expiry_year']);
         $payment2dRequest->setCvv($data['cvv']);
-        $payment2dRequest->setMerchantKey(Config::get('app.merchant_key'));
-        $payment2dRequest->setCurrencyCode(Config::get('app.currency_code'));
-        $payment2dRequest->setInvoiceDescription(Config::get('app.invoice_description'));
-        $payment2dRequest->setTotal((float)$data['total']);
-        $payment2dRequest->setInstallmentsNumber($data['installments_number']);
-        $payment2dRequest->setName(Config::get('app._name'));
-        $payment2dRequest->setSurname(Config::get('app.surname'));
-        $payment2dRequest->setHashKey(HashGeneratorHelper::hashGenerator((float)$data['total'], $data['installments_number']));
-        $payment2dRequest->setInvoiceId(Session::get('invoice_id'));
+        self::extracted($payment2dRequest, $data);
+
+    }
+
+    /**
+     * @param $payment2dRequest
+     * @param $data
+     * @return void
+     */
+    public static function extracted($request, $data): void
+    {
+        $request->setMerchantKey(Config::get('app.merchant_key'));
+        $request->setCurrencyCode(Config::get('app.currency_code'));
+        $request->setInvoiceDescription(Config::get('app.invoice_description'));
+        $request->setTotal((float)$data['total']);
+        $request->setInstallmentsNumber($data['installments_number']);
+        $request->setName(Config::get('app._name'));
+        $request->setSurname(Config::get('app.surname'));
+        $request->setHashKey(HashGeneratorHelper::hashGenerator((float)$data['total'], $data['installments_number']));
+        $request->setInvoiceId(Session::get('invoice_id'));
+    }
+
+    public static function getPosRequest($request,$data)
+    {
+        $request->setCreditCard($data['credit_card']);
+        $request->setAmount($data['amount']);
+        $request->setCurrencyCode(Config::get('app.currency_code'));
+        $request->setIs2d(Config::get('app.is_2d'));
+        $request->setMerchantKey(Config::get('app.merchant_key'));
 
     }
 }

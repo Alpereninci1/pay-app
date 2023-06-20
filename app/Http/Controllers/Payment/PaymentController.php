@@ -2,33 +2,35 @@
 
 namespace App\Http\Controllers\Payment;
 
-use App\Helpers\HashGeneratorHelper;
 use App\Helpers\RequestHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetPosRequest;
 use App\Http\Requests\PaymentRequest;
 use App\Mapper\Common\GetTokenMapper;
+use App\Mapper\Payment\GetPosMapper;
+use App\Mapper\Payment\Payment2dMapper;
 use App\Requests\Common\GetTokenRequest;
-use App\Requests\Payment\ItemRequest;
 use App\Requests\Payment\Payment2dRequest;
 use App\Requests\Payment\Payment3dRequest;
+use App\Requests\Payment\GetPosRequest as PosRequest;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
     private GetTokenRequest $getTokenRequest;
     private Payment2dRequest $payment2dRequest;
     private Payment3dRequest $payment3dRequest;
-    public function __construct(GetTokenRequest $getTokenRequest,Payment2dRequest $payment2dRequest,Payment3dRequest $payment3dRequest)
+    private PosRequest $posRequest;
+    public function __construct(GetTokenRequest $getTokenRequest,Payment2dRequest $payment2dRequest,Payment3dRequest $payment3dRequest,PosRequest $posRequest)
     {
         $this->getTokenRequest = $getTokenRequest;
         $this->payment2dRequest = $payment2dRequest;
         $this->payment3dRequest = $payment3dRequest;
+        $this->posRequest = $posRequest;
     }
     public function getToken()
     {
@@ -84,27 +86,7 @@ class PaymentController extends Controller
 
         RequestHelper::payment3dRequest($this->payment3dRequest,$validatedData);
 
-        $items = [
-            [
-                'name' => 'item 1',
-                'price' => $total,
-                'quantity' => 1,
-                'description' => 'asfasfasfas'
-            ]
-        ];
-
-        $itemRequestData = [];
-
-        foreach ($items as $item) {
-            $itemData = [
-                'name' => $item['name'],
-                'price' => $item['price'],
-                'quantity' => $item['quantity'],
-                'description' => $item['description']
-            ];
-
-            $itemRequestData[] = $itemData;
-        }
+        $itemRequestData = $this->getItemRequestData($total);
 
         $this->payment3dRequest->setItems($itemRequestData);
 
@@ -159,27 +141,7 @@ class PaymentController extends Controller
 
         RequestHelper::payment2dRequest($this->payment2dRequest,$validatedData);
 
-        $items = [
-            [
-                'name' => 'item 1',
-                'price' => $total,
-                'quantity' => 1,
-                'description' => 'asfasfasfas'
-            ]
-        ];
-
-        $itemRequestData = [];
-
-        foreach ($items as $item) {
-            $itemData = [
-                'name' => $item['name'],
-                'price' => $item['price'],
-                'quantity' => $item['quantity'],
-                'description' => $item['description']
-            ];
-
-            $itemRequestData[] = $itemData;
-        }
+        $itemRequestData = $this->getItemRequestData($total);
 
         $this->payment2dRequest->setItems($itemRequestData);
 
@@ -194,11 +156,14 @@ class PaymentController extends Controller
                     'Authorization' => 'Bearer ' . Session::get('token'),
                 ]
             ]);
-            if($response->getStatusCode() === 200) {
-                Log::channel('info')->info('2D Başarılı.');
+            $data = Payment2dMapper::map($response);
+            $dataArray = Payment2dMapper::map($response)->toArray();
+            $status_code = $data->getStatusCode();
+            if($status_code === 100) {
+                Log::channel('info')->info('2D Başarılı.',[$dataArray]);
                 return redirect()->route('success');
             } else {
-                Log::channel('error')->error('2D Başarısız.');
+                Log::channel('error')->error('2D Başarısız.',[$status_code]);
                 return redirect()->route('error');
             }
         } catch (\Exception $e) {
@@ -234,35 +199,31 @@ class PaymentController extends Controller
         }
     }
 
-    public function getPos(Request $request)
+    public function getPos(GetPosRequest $request)
     {
         $this->getToken();
         $tokenValue = Session::get('token');
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
         $client = new Client();
-
-        $credit_card = $request->input('credit_card');
-        $amount = $request->input('amount');
-        $currency_code = Config::get('app.currency_code');
-        $is_2d = '0';
-        $merchant_key = Config::get('app.merchant_key');
+        $validatedData = $request->validated();
+        RequestHelper::getPosRequest($this->posRequest,$validatedData);
+        $body = $this->posRequest->getData();
 
         try {
             $response = $client->post($apiUrl,[
-                'json' => [
-                    'credit_card' => $credit_card,
-                    'amount' => $amount,
-                    'currency_code' => $currency_code,
-                    'merchant_key' => $merchant_key,
-                    'is_2d' => $is_2d
-                ],
+                'body' => $body,
                 'headers' => [
+                    'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $tokenValue,
                 ]
             ]);
-            if($response->getStatusCode() === 200) {
+
+            $data = GetPosMapper::map($response);
+            $status_code = $data->getStatusCode();
+            //dd($data->toArray());
+            if($status_code === 100) {
                 $responseData = json_decode($response->getBody(),true);
-                Log::channel('info')->info('Get Pos Başarılı:',[$responseData]);
+                Log::channel('info')->info('Get Pos Başarılı:',[$data->toJson()]);
                 return $responseData;
             }else {
                 Log::channel('error')->error('İşlem başarısız.');
@@ -330,6 +291,36 @@ class PaymentController extends Controller
     public function index()
     {
         return view('index');
+    }
+
+    /**
+     * @param float $total
+     * @return array
+     */
+    public function getItemRequestData(float $total): array
+    {
+        $this->items = [
+            [
+                'name' => 'item 1',
+                'price' => $total,
+                'quantity' => 1,
+                'description' => 'items description'
+            ]
+        ];
+
+        $itemRequestData = [];
+
+        foreach ($this->items as $item) {
+            $itemData = [
+                'name' => $item['name'],
+                'price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'description' => $item['description']
+            ];
+
+            $itemRequestData[] = $itemData;
+        }
+        return $itemRequestData;
     }
 
 }

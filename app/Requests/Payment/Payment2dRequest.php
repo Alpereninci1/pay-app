@@ -33,6 +33,7 @@ class Payment2dRequest extends BasePaymentRequest
             'expiry_month' => $this->getExpiryMonth(),
             'expiry_year' => $this->getExpiryYear(),
             'cvv' => $this->getCvv(),
+            'currency_code' => $this->getCurrencyCode(),
             'installments_number' => $this->getInstallmentsNumber(),
             'invoice_id' => $this->getInvoiceId(),
             'invoice_description' => $this->getInvoiceDescription(),
