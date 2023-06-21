@@ -34,14 +34,19 @@ class PaymentController extends Controller
     }
     public function getToken()
     {
+        // TODO: env dosyasında base url tanımlayabiliriz. her metot içerisinde base url i kullanarak servislere karşılık gelen path leri metot içerisinde tanımlayabiliriz.
+        // TODO: Ör: getenv('BASE_URL') . 'ccpayment/api/token'; gibi. $apiUrl olarak kullanılan her kısmı bu şekilde deiştirebiliriz
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/token';
 
         $app_id = Config::get('app.app_id');
         $app_secret = Config::get('app.app_secret');
 
+        // TODO: kod kalabalığı olmaması adına Config::get('app.app_id') değerini değişkene atmak yerşne bunu direkt olarak aşağıdaki set fonksiyonuna yazabiliriz
+        // TODO: Benzer durumda olan tüm değişkenleri bu şekilde güncelleyebiliriz
         $this->getTokenRequest->setAppId($app_id);
         $this->getTokenRequest->setAppSecret($app_secret);
 
+        // TODO: $body nin kullanıldığı herhangi bir yer göremedim. gereksiz ise kaldırabiliriz. getTokenData() fonksiyonu da sadece burada kullanılıyor. Request objesi içerisinde bu fonksiyonu da silebiliriz.
         $body = $this->getTokenRequest->getTokenData();
         $client = new Client();
         if (Session::has('token') ) {
@@ -56,29 +61,41 @@ class PaymentController extends Controller
                     ]
                 ]);
                 $data = GetTokenMapper::map($response);
+                // TODO: $data->getData() null gelirse içerisinden getToken() ı alamayacaksın ve kod burada hata verecek. Buradaki akışı düzeltebilir misin?
                 $token = $data->getData()->getToken();
                 $dataArray = $data->toArray();
+                // TODO: değişken isimlerimizi camel case (camelCase) olacak şekilde tanımlayabiliriz.
                 $status_code = $data->getStatusCode();
                 if ($status_code === 100) {
+
+                    // TODO: Burada tanımladığın $expiration değişkenini anlayamadım. Bunu response dan almamız gerekmiyor mu?
                     $expiration = Carbon::now()->addHours(5); // Token süresi 2 saat
+
+                    // TODO: Loglarda kullanmış olduğumuz metinleri ingilizce olarak düzenleyebiliriz.
                     Log::channel('info')->info('Token alındı.',['Token' => $token]);
                     Session::put('token',$token);
                     Session::put('token_expiration', $expiration);
                     Session::save();
                     return $dataArray;
                 } else {
+                    // TODO: exception dıiındaki error loglarda bulunulan fonksiyonun adını belirterek bir standart oluşturalım
                     Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$status_code]);
                     return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $status_code]);
                 }
             }catch (\Exception $e){
+                // TODO: exception a düştüğünde error log basarken getTrace() fonksiyonunu da kullanabiliriz. Hatanın nereden kaynaklı olduğunu daha net bir şekilde görmüş oluruz.
+                // TODO: Loglarla ilgili düzeltmelerini yaparken konuşabiliriz. diğer kısımlar da bu şekilde yapılması gerekiyor
                 Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$e->getMessage()]);
                 return response()->json(['message' => 'Token alırken bir hata oluştu: ' . $e->getMessage()]);
             }
         }
+
+        // TODO: getToken fonksiyonunda return tipleri birbirinden farklı. bunları bir standarda çevirmemiz gerekir.
     }
 
     public function processPayment3d(PaymentRequest $request)
     {
+        // TODO: yukarıda da bahsettiğim gibi düzeltebiliriz
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
 
         $validatedData = $request->validated();
@@ -95,6 +112,7 @@ class PaymentController extends Controller
         $client = new Client();
         try {
             $response = $client->post($apiUrl, [
+                // TODO: form_params içerisindeki parametrelere tek tek değerleri get ile çağırmaktansa objeyi toArray fonks ile direkt olarak form_params olarak gönderelim.
                 'form_params' => [
                     'cc_holder_name' => $this->payment3dRequest->getCcHolderName(),
                     'cc_no' => $this->payment3dRequest->getCcNo(),
@@ -118,9 +136,11 @@ class PaymentController extends Controller
                 ]
             ]);
             if ($response->getStatusCode() === 200) {
+                // TODO: response u loglamamız gerekir.
                 Log::channel('info')->info('3D Başarılı.');
                 return $response->getBody();
             } else {
+                // TODO: exception dıiındaki error loglarda bulunulan fonksiyonun adını belirterek bir standart oluşturalım
                 Log::channel('error')->error('3D Ödeme işlemi başarısız.');
                 return response()->json(['message' => 'Ödeme işlemi başarısız.']);
             }
@@ -133,7 +153,7 @@ class PaymentController extends Controller
 
     public function processPayment2d(PaymentRequest $request)
     {
-
+        // TODO: Bu fonksiyon içeirsinde de genel olarak düzeltilmesi gereken benzer durumlar var. yeniden gözden geçirebilir misin?
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart2D';
 
         $validatedData = $request->validated();
@@ -173,6 +193,7 @@ class PaymentController extends Controller
         }
     }
 
+    // TODO: Bu servis işimize yaramayacak. kaldırabiliriz
     public function getInstallment()
     {
         $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/installments';
@@ -250,6 +271,7 @@ class PaymentController extends Controller
         $cvv = $validatedData['cvv'];
         $installmentNumbers = $validatedData['installments_number'];
 
+        // TODO: Bu şekilde iki log olarak ayırmamıza gerek yok. Tüm request parametrelerini loglaman yeterli.
         Log::channel('info')->info('Girilen Veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn]);
 
         Log::channel('info')->info('Kart Bilgiler:', ['Kart Üzerindeki İsim: ' => $ccHolderName, 'Kart Numarası: ' => $ccNo, 'Ay: ' => $expiryMonth, 'Yıl: ' => $expiryYear , 'CVV' => $cvv, 'Taksit Sayısı' => $installmentNumbers]);
@@ -298,6 +320,7 @@ class PaymentController extends Controller
      */
     public function getItemRequestData(float $total): array
     {
+        // TODO: Buradaki kısmı beraber gözden geçirelim.
         $this->items = [
             [
                 'name' => 'item 1',

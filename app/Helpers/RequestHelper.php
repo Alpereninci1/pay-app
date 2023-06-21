@@ -30,6 +30,7 @@ class RequestHelper
     }
 
     /**
+     * TODO: parametre ismi burada yanlış tanımlanmış
      * @param $payment2dRequest
      * @param $data
      * @return void
@@ -41,6 +42,7 @@ class RequestHelper
         $request->setInvoiceDescription(Config::get('app.invoice_description'));
         $request->setTotal((float)$data['total']);
         $request->setInstallmentsNumber($data['installments_number']);
+        // TODO: name ve surname bilgisini neden configden alıyoruz
         $request->setName(Config::get('app._name'));
         $request->setSurname(Config::get('app.surname'));
         $request->setHashKey(HashGeneratorHelper::hashGenerator((float)$data['total'], $data['installments_number']));

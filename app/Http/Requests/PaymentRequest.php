@@ -29,10 +29,10 @@ class PaymentRequest extends FormRequest
             'cvv' => 'nullable',
             'total' => 'required',
             'installments_number' => 'required',
-            'amount' => 'nullable',
+            'amount' => 'nullable', // TODO: amount bilgisini neden null geçilebilir kıldık? aynı şekilde nullable olarak tanımladığın input alanlarını gözden geçirebilir misin?
             'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
             'name' => 'nullable',
-            'tckn' => 'nullable|max:11'
+            'tckn' => 'nullable|max:11' // TODO: min değeri de eklemeliyiz
         ];
     }
 }

@@ -124,6 +124,7 @@ return [
 
     'key' => env('APP_KEY'),
 
+    // TODO: burada tanımlanan ve değişkenlik gösterebilecek değerleri silebiliriz
     'merchant_key' => env('MERCHANT_KEY'),
     'app_id' => env('APP_ID'),
     'app_secret' => env('APP_SECRET'),

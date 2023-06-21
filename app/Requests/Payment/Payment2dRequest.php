@@ -25,6 +25,7 @@ class Payment2dRequest extends BasePaymentRequest
         $this->cvv = $cvv;
     }
 
+    // TODO: burada neden böyle bir fonksiyona ihtiyaç duyduk
     public function getData()
     {
         $data = [

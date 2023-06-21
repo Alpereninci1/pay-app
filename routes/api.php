@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 Route::middleware(['api'])->group(function () {
     // Rotalar buraya eklenecek
+    // TODO: Buradaki route lar kullanılmayacak ise kaldırabiliriz
     Route::get('get-token',[\App\Http\Controllers\Payment\PaymentController::class,'getToken']);
     Route::post('payment3D',[\App\Http\Controllers\Payment\PaymentController::class,'processPayment3d']);
     Route::post('payment2D',[\App\Http\Controllers\Payment\PaymentController::class,'processPayment2d']);

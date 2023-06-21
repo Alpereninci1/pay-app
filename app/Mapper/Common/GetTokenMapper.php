@@ -20,6 +20,7 @@ class GetTokenMapper implements IMapper
         $getTokenResponse->setStatusCode($responseData['status_code']);
         $getTokenResponse->setStatusDescription($responseData['status_description']);
 
+        // TODO: status_code 100 dışında herhangi bir değere sahip olursa data dönmeyecektir. Dolayısı ile kod burada hata verecektir. status_code un durumuna göre map işlemini tekrardan gözden geçirebilir misin?
         $tokenResponse = new TokenResponse();
         $tokenResponse->setToken($responseData['data']['token']);
         $tokenResponse->setExpiredAt($responseData['data']['expires_at']);
