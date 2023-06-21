@@ -34,13 +34,10 @@ class PaymentController extends Controller
     }
     public function getToken()
     {
-        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/token';
+        $apiUrl = getenv('BASE_URL').'token';
 
-        $app_id = Config::get('app.app_id');
-        $app_secret = Config::get('app.app_secret');
-
-        $this->getTokenRequest->setAppId($app_id);
-        $this->getTokenRequest->setAppSecret($app_secret);
+        $this->getTokenRequest->setAppId(Config::get('app.app_id'));
+        $this->getTokenRequest->setAppSecret(Config::get('app.app_secret'));
 
         $body = $this->getTokenRequest->getTokenData();
         $client = new Client();
@@ -58,8 +55,8 @@ class PaymentController extends Controller
                 $data = GetTokenMapper::map($response);
                 $token = $data->getData()->getToken();
                 $dataArray = $data->toArray();
-                $status_code = $data->getStatusCode();
-                if ($status_code === 100) {
+                $statusCode = $data->getStatusCode();
+                if ($statusCode === 100) {
                     $expiration = Carbon::now()->addHours(5); // Token süresi 2 saat
                     Log::channel('info')->info('Token alındı.',['Token' => $token]);
                     Session::put('token',$token);
@@ -67,8 +64,8 @@ class PaymentController extends Controller
                     Session::save();
                     return $dataArray;
                 } else {
-                    Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$status_code]);
-                    return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $status_code]);
+                    Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$statusCode]);
+                    return response()->json(['message' => 'Token alırken bir hata oluştu. Hata kodu: ' . $statusCode]);
                 }
             }catch (\Exception $e){
                 Log::channel('error')->error('Token alırken bir hata oluştu. Hata kodu: ',[$e->getMessage()]);
@@ -79,7 +76,7 @@ class PaymentController extends Controller
 
     public function processPayment3d(PaymentRequest $request)
     {
-        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart3D';
+        $apiUrl = getenv('BASE_URL').'paySmart3D';
 
         $validatedData = $request->validated();
         $total = (float)$validatedData['total'];
@@ -126,7 +123,7 @@ class PaymentController extends Controller
             }
         } catch (\Exception $e) {
             // İstek sırasında bir hata oluşursa
-            Log::channel('error')->error('Ödeme işlemi sırasında bir hata oluştu: ',[$e->getMessage()]);
+            Log::channel('error')->error('Ödeme işlemi sırasında bir hata oluştu: ',[$e->getTrace()]);
             return response()->json(['message' => 'Ödeme işlemi sırasında bir hata oluştu: ' . $e->getMessage()]);
         }
     }
@@ -134,7 +131,7 @@ class PaymentController extends Controller
     public function processPayment2d(PaymentRequest $request)
     {
 
-        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/paySmart2D';
+        $apiUrl = getenv('BASE_URL').'paySmart2D';
 
         $validatedData = $request->validated();
         $total = (float)$validatedData['total'];
@@ -173,37 +170,11 @@ class PaymentController extends Controller
         }
     }
 
-    public function getInstallment()
-    {
-        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/installments';
-        $client = new Client();
-        $merchant_key = Config::get('app.merchant_key');
-        try {
-            $response = $client->post($apiUrl,[
-                'json' => [
-                    'merchant_key' => $merchant_key
-                ],
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . Session::get('token'),
-                ]
-            ]);
-            if($response->getStatusCode() === 200) {
-                $responseData = json_decode($response->getBody(),true);
-                return view('installment',['response_data' => $response->getBody()]);
-            }else {
-                return response()->json(['message' => 'İşlemi başarısız.']);
-            }
-        }catch (\Exception $e){
-            return response()->json(['message' => 'İşlem sırasında bir hata oluştu: ' . $e->getMessage()]);
-        }
-    }
-
     public function getPos(GetPosRequest $request)
     {
         $this->getToken();
         $tokenValue = Session::get('token');
-        $apiUrl = 'https://test.vepara.com.tr/ccpayment/api/getpos';
+        $apiUrl = getenv('BASE_URL').'getpos';
         $client = new Client();
         $validatedData = $request->validated();
         RequestHelper::getPosRequest($this->posRequest,$validatedData);
@@ -250,9 +221,7 @@ class PaymentController extends Controller
         $cvv = $validatedData['cvv'];
         $installmentNumbers = $validatedData['installments_number'];
 
-        Log::channel('info')->info('Girilen Veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn]);
-
-        Log::channel('info')->info('Kart Bilgiler:', ['Kart Üzerindeki İsim: ' => $ccHolderName, 'Kart Numarası: ' => $ccNo, 'Ay: ' => $expiryMonth, 'Yıl: ' => $expiryYear , 'CVV' => $cvv, 'Taksit Sayısı' => $installmentNumbers]);
+        Log::channel('info')->info('Girilen Veriler:', ['Tutar: ' => $amount, 'Telefon Numarası: ' => $phone, 'İsim: ' => $name, 'TC Kimlik Numarası: ' => $tckn,'Kart Üzerindeki İsim: ' => $ccHolderName, 'Kart Numarası: ' => $ccNo, 'Ay: ' => $expiryMonth, 'Yıl: ' => $expiryYear , 'CVV' => $cvv, 'Taksit Sayısı' => $installmentNumbers]);
 
         $is3D = $request->has('3d_checkbox');
         if ($is3D) {

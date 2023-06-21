@@ -30,7 +30,7 @@ class RequestHelper
     }
 
     /**
-     * @param $payment2dRequest
+     * @param $request
      * @param $data
      * @return void
      */

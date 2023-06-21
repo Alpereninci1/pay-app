@@ -10,7 +10,9 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
-        "monolog/monolog": "^3.3"
+        "monolog/monolog": "^3.3",
+        "symfony/http-client": "^6.3",
+        "symfony/mailgun-mailer": "^6.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

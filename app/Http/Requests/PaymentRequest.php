@@ -23,16 +23,16 @@ class PaymentRequest extends FormRequest
     {
         return [
             'cc_holder_name' => 'string|required',
-            'cc_no' => 'string|required|max:16',
+            'cc_no' => 'string|required|max:16|min:16',
             'expiry_month' => 'required|max:12|min:1',
             'expiry_year' => 'required',
             'cvv' => 'nullable',
             'total' => 'required',
             'installments_number' => 'required',
-            'amount' => 'nullable',
-            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
-            'name' => 'nullable',
-            'tckn' => 'nullable|max:11'
+            'amount' => 'required',
+            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'name' => 'required',
+            'tckn' => 'required|max:11|min:11'
         ];
     }
 }

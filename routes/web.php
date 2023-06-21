@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+use \App\Http\Controllers\Payment\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,11 +19,23 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('get-pos',[\App\Http\Controllers\Payment\PaymentController::class,'getPos'])->name('payment.get-pos');
-Route::get('index',[\App\Http\Controllers\Payment\PaymentController::class,'index'])->name('payment.index');
-Route::post('payment',[\App\Http\Controllers\Payment\PaymentController::class,'processPayment'])->name('payment');
-Route::get('get-token',[\App\Http\Controllers\Payment\PaymentController::class,'getToken'])->name('get-token');
-Route::get('success',[\App\Http\Controllers\Payment\PaymentController::class,'success'])->name('success');
-Route::get('error',[\App\Http\Controllers\Payment\PaymentController::class,'error'])->name('error');
-Route::get('get-installments',[\App\Http\Controllers\Payment\PaymentController::class,'getInstallment']);
+Route::post('get-pos',[PaymentController::class,'getPos'])->name('payment.get-pos');
+Route::get('',[PaymentController::class,'index'])->name('payment.index');
+Route::post('payment',[PaymentController::class,'processPayment'])->name('payment');
+Route::get('get-token',[PaymentController::class,'getToken'])->name('get-token');
+Route::get('success',[PaymentController::class,'success'])->name('success');
+Route::get('error',[PaymentController::class,'error'])->name('error');
+Route::get('get-installments',[PaymentController::class,'getInstallment']);
 
+
+Route::get('send-mail', function () {
+
+    $details = [
+        'title' => 'Mail from Alperen',
+        'body' => 'This is for testing email using smtp'
+    ];
+
+    Mail::to('alperen25inci@gmail.com')->send(new \App\Mail\MyTestMail($details));
+
+    dd("Email is Sent.");
+});
