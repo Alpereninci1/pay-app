@@ -57,7 +57,7 @@ class PaymentController extends Controller
                 ]);
                 $data = GetTokenMapper::map($response);
                 $token = $data->getData()->getToken();
-                $dataArray = GetTokenMapper::map($response)->toArray();
+                $dataArray = $data->toArray();
                 $status_code = $data->getStatusCode();
                 if ($status_code === 100) {
                     $expiration = Carbon::now()->addHours(5); // Token süresi 2 saat
@@ -157,7 +157,7 @@ class PaymentController extends Controller
                 ]
             ]);
             $data = Payment2dMapper::map($response);
-            $dataArray = Payment2dMapper::map($response)->toArray();
+            $dataArray = $data->toArray();
             $status_code = $data->getStatusCode();
             if($status_code === 100) {
                 Log::channel('info')->info('2D Başarılı.',[$dataArray]);
@@ -220,7 +220,6 @@ class PaymentController extends Controller
 
             $data = GetPosMapper::map($response);
             $status_code = $data->getStatusCode();
-            //dd($data->toArray());
             if($status_code === 100) {
                 $responseData = json_decode($response->getBody(),true);
                 Log::channel('info')->info('Get Pos Başarılı:',[$data->toJson()]);
