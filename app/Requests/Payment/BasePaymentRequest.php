@@ -7,37 +7,37 @@ class BasePaymentRequest
     /**
      * @var string
      */
-    private string $ccHolderName;
+    private string $cc_holder_name;
 
     /**
      * @var string
      */
-    private string $ccNo;
+    private string $cc_no;
 
     /**
      * @var integer
      */
-    private int $expiryMonth;
+    private int $expiry_month;
 
     /**
      * @var integer
      */
-    private int $expiryYear;
+    private int $expiry_year;
 
     /**
      * @var string
      */
-    private string $merchantKey;
+    private string $merchant_key;
 
     /**
      * @var string
      */
-    private string $currencyCode;
+    private string $currency_code;
 
     /**
      * @var string
      */
-    private string $invoiceDescription;
+    private string $invoice_description;
 
     /**
      * @var integer
@@ -47,7 +47,7 @@ class BasePaymentRequest
     /**
      * @var integer
      */
-    private int $installmentsNumber;
+    private int $installments_number;
 
     /**
      * @var string
@@ -62,12 +62,12 @@ class BasePaymentRequest
     /**
      * @var string
      */
-    private string $hashKey;
+    private string $hash_key;
 
     /**
      * @var string
      */
-    private string $invoiceId;
+    private string $invoice_id;
 
     /**
      * @var ItemRequest[]
@@ -80,7 +80,7 @@ class BasePaymentRequest
      */
     public function getCcHolderName(): string
     {
-        return $this->ccHolderName;
+        return $this->cc_holder_name;
     }
 
     /**
@@ -88,7 +88,7 @@ class BasePaymentRequest
      */
     public function setCcHolderName(string $ccHolderName): void
     {
-        $this->ccHolderName = $ccHolderName;
+        $this->cc_holder_name = $ccHolderName;
     }
 
     /**
@@ -96,7 +96,7 @@ class BasePaymentRequest
      */
     public function getCcNo(): string
     {
-        return $this->ccNo;
+        return $this->cc_no;
     }
 
     /**
@@ -104,7 +104,7 @@ class BasePaymentRequest
      */
     public function setCcNo(string $ccNo): void
     {
-        $this->ccNo = $ccNo;
+        $this->cc_no = $ccNo;
     }
 
     /**
@@ -112,7 +112,7 @@ class BasePaymentRequest
      */
     public function getExpiryMonth(): int
     {
-        return $this->expiryMonth;
+        return $this->expiry_month;
     }
 
     /**
@@ -120,7 +120,7 @@ class BasePaymentRequest
      */
     public function setExpiryMonth(int $expiryMonth): void
     {
-        $this->expiryMonth = $expiryMonth;
+        $this->expiry_month = $expiryMonth;
     }
 
     /**
@@ -128,7 +128,7 @@ class BasePaymentRequest
      */
     public function getExpiryYear(): int
     {
-        return $this->expiryYear;
+        return $this->expiry_year;
     }
 
     /**
@@ -136,7 +136,7 @@ class BasePaymentRequest
      */
     public function setExpiryYear(int $expiryYear): void
     {
-        $this->expiryYear = $expiryYear;
+        $this->expiry_year = $expiryYear;
     }
 
     /**
@@ -144,7 +144,7 @@ class BasePaymentRequest
      */
     public function getMerchantKey(): string
     {
-        return $this->merchantKey;
+        return $this->merchant_key;
     }
 
     /**
@@ -152,7 +152,7 @@ class BasePaymentRequest
      */
     public function setMerchantKey(string $merchantKey): void
     {
-        $this->merchantKey = $merchantKey;
+        $this->merchant_key = $merchantKey;
     }
 
     /**
@@ -160,7 +160,7 @@ class BasePaymentRequest
      */
     public function getCurrencyCode(): string
     {
-        return $this->currencyCode;
+        return $this->currency_code;
     }
 
     /**
@@ -168,7 +168,7 @@ class BasePaymentRequest
      */
     public function setCurrencyCode(string $currencyCode): void
     {
-        $this->currencyCode = $currencyCode;
+        $this->currency_code = $currencyCode;
     }
 
     /**
@@ -176,7 +176,7 @@ class BasePaymentRequest
      */
     public function getInvoiceDescription(): string
     {
-        return $this->invoiceDescription;
+        return $this->invoice_description;
     }
 
     /**
@@ -184,7 +184,7 @@ class BasePaymentRequest
      */
     public function setInvoiceDescription(string $invoiceDescription): void
     {
-        $this->invoiceDescription = $invoiceDescription;
+        $this->invoice_description = $invoiceDescription;
     }
 
     /**
@@ -208,7 +208,7 @@ class BasePaymentRequest
      */
     public function getInstallmentsNumber(): int
     {
-        return $this->installmentsNumber;
+        return $this->installments_number;
     }
 
     /**
@@ -216,7 +216,7 @@ class BasePaymentRequest
      */
     public function setInstallmentsNumber(int $installmentsNumber): void
     {
-        $this->installmentsNumber = $installmentsNumber;
+        $this->installments_number = $installmentsNumber;
     }
 
     /**
@@ -256,7 +256,7 @@ class BasePaymentRequest
      */
     public function getHashKey(): string
     {
-        return $this->hashKey;
+        return $this->hash_key;
     }
 
     /**
@@ -264,7 +264,7 @@ class BasePaymentRequest
      */
     public function setHashKey(string $hashKey): void
     {
-        $this->hashKey = $hashKey;
+        $this->hash_key = $hashKey;
     }
 
     /**
@@ -272,7 +272,7 @@ class BasePaymentRequest
      */
     public function getInvoiceId(): string
     {
-        return $this->invoiceId;
+        return $this->invoice_id;
     }
 
     /**
@@ -280,7 +280,7 @@ class BasePaymentRequest
      */
     public function setInvoiceId(string $invoiceId): void
     {
-        $this->invoiceId = $invoiceId;
+        $this->invoice_id = $invoiceId;
     }
 
     /**
@@ -299,6 +299,21 @@ class BasePaymentRequest
         $this->items = $items;
     }
 
+    /**
+     * @return false|string
+     */
+    public function toJson(): bool|string
+    {
+        return json_encode($this->toArray());
+    }
 
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return get_object_vars($this);
+
+    }
 
 }

@@ -14,8 +14,8 @@ class RequestHelper
         $payment3dRequest->setExpiryMonth($data['expiry_month']);
         $payment3dRequest->setExpiryYear($data['expiry_year']);
         self::extracted($payment3dRequest, $data);
-        $payment3dRequest->setReturnUrl(Config::get('app.return_url'));
-        $payment3dRequest->setCancelUrl(Config::get('app.cancel_url'));
+        $payment3dRequest->setReturnUrl(getenv('RETURN_URL'));
+        $payment3dRequest->setCancelUrl(getenv('CANCEL_URL'));
     }
 
     public static function payment2dRequest($payment2dRequest,$data)
@@ -36,9 +36,9 @@ class RequestHelper
      */
     public static function extracted($request, $data): void
     {
-        $request->setMerchantKey(Config::get('app.merchant_key'));
-        $request->setCurrencyCode(Config::get('app.currency_code'));
-        $request->setInvoiceDescription(Config::get('app.invoice_description'));
+        $request->setMerchantKey(getenv('MERCHANT_KEY'));
+        $request->setCurrencyCode(getenv('CURRENCY_CODE'));
+        $request->setInvoiceDescription(getenv('INVOICE_DESCRIPTION'));
         $request->setTotal((float)$data['total']);
         $request->setInstallmentsNumber($data['installments_number']);
         $request->setName(Config::get('app._name'));

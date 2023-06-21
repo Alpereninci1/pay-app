@@ -7,19 +7,19 @@ class Payment3dRequest extends BasePaymentRequest
     /**
      * @var string
      */
-    private string $returnUrl;
+    private string $return_url;
 
     /**
      * @var string
      */
-    private string $cancelUrl;
+    private string $cancel_url;
 
     /**
      * @return string
      */
     public function getReturnUrl(): string
     {
-        return $this->returnUrl;
+        return $this->return_url;
     }
 
     /**
@@ -27,7 +27,7 @@ class Payment3dRequest extends BasePaymentRequest
      */
     public function setReturnUrl(string $returnUrl): void
     {
-        $this->returnUrl = $returnUrl;
+        $this->return_url = $returnUrl;
     }
 
     /**
@@ -35,7 +35,7 @@ class Payment3dRequest extends BasePaymentRequest
      */
     public function getCancelUrl(): string
     {
-        return $this->cancelUrl;
+        return $this->cancel_url;
     }
 
     /**
@@ -43,7 +43,21 @@ class Payment3dRequest extends BasePaymentRequest
      */
     public function setCancelUrl(string $cancelUrl): void
     {
-        $this->cancelUrl = $cancelUrl;
+        $this->cancel_url = $cancelUrl;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $parent = parent::toArray();
+
+        $child = get_object_vars($this);
+
+        $data = array_merge($parent, $child);
+        return $data;
+
     }
 
 

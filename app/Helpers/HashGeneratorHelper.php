@@ -1,7 +1,6 @@
 <?php
 namespace App\Helpers;
 
-use Dflydev\DotAccessData\Data;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
@@ -10,10 +9,10 @@ class HashGeneratorHelper{
 
     public static function hashGenerator($total,$installmentsNumber)
     {
-        $currency_code = Config::get('app.currency_code');
-        $merchant_key = Config::get('app.merchant_key');
+        $currency_code = getenv('CURRENCY_CODE');
+        $merchant_key = getenv('MERCHANT_KEY');
         $invoice_id = Str::random(15);
-        $app_secret = Config::get('app.app_secret');
+        $app_secret = getenv('APP_SECRET');
         $data = $total . '|' . $installmentsNumber . '|' . $currency_code . '|' . $merchant_key . '|' . $invoice_id;
 
         Session::put('invoice_id',$invoice_id);

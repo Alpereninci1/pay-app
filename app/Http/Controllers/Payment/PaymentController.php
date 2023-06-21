@@ -87,30 +87,14 @@ class PaymentController extends Controller
 
         $this->payment3dRequest->setItems($itemRequestData);
 
-        $itemJson = json_encode($this->payment3dRequest->getItems());
+        $body = $this->payment3dRequest->toArray();
 
         $client = new Client();
         try {
             $response = $client->post($apiUrl, [
-                'form_params' => [
-                    'cc_holder_name' => $this->payment3dRequest->getCcHolderName(),
-                    'cc_no' => $this->payment3dRequest->getCcNo(),
-                    'expiry_month' => $this->payment3dRequest->getExpiryMonth(),
-                    'expiry_year' => $this->payment3dRequest->getExpiryYear(),
-                    'currency_code' => $this->payment3dRequest->getCurrencyCode(),
-                    'installments_number' => $this->payment3dRequest->getInstallmentsNumber(),
-                    'invoice_id' => $this->payment3dRequest->getInvoiceId(),
-                    'invoice_description' => $this->payment3dRequest->getInvoiceDescription(),
-                    'total' => $this->payment3dRequest->getTotal(),
-                    'merchant_key' => $this->payment3dRequest->getMerchantKey(),
-                    'name' => $this->payment3dRequest->getName(),
-                    'surname' => $this->payment3dRequest->getSurname(),
-                    'hash_key' => $this->payment3dRequest->getHashKey(),
-                    'return_url' => $this->payment3dRequest->getReturnUrl(),
-                    'cancel_url' => $this->payment3dRequest->getCancelUrl(),
-                    'items' => $itemJson,
-                ],
+                'body' => json_encode($body),
                 'headers' => [
+                    'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . Session::get('token')
                 ]
             ]);
@@ -135,14 +119,13 @@ class PaymentController extends Controller
 
         $validatedData = $request->validated();
         $total = (float)$validatedData['total'];
-
         RequestHelper::payment2dRequest($this->payment2dRequest,$validatedData);
 
         $itemRequestData = $this->getItemRequestData($total);
 
         $this->payment2dRequest->setItems($itemRequestData);
 
-        $body = $this->payment2dRequest->getData();
+        $body = $this->payment2dRequest->toJson();
 
         $client = new Client();
         try {
