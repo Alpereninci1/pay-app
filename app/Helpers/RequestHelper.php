@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Session;
 
 class RequestHelper
 {
+    /**
+     * @param $payment3dRequest
+     * @param $data
+     * @return void
+     */
     public static function payment3dRequest($payment3dRequest,$data)
     {
         self::extracted($payment3dRequest, $data);
@@ -14,6 +19,11 @@ class RequestHelper
         $payment3dRequest->setCancelUrl(getenv('CANCEL_URL'));
     }
 
+    /**
+     * @param $payment2dRequest
+     * @param $data
+     * @return void
+     */
     public static function payment2dRequest($payment2dRequest,$data)
     {
         $payment2dRequest->setCvv($data['cvv']);
@@ -28,9 +38,6 @@ class RequestHelper
     public static function extracted($request, $data): void
     {
         $name = $data['name'];
-        $names = explode(' ', $name);
-        $lastName = array_pop($names);
-        $firstName = implode(' ',$names);
 
         $request->setCcHolderName($data['cc_holder_name']);
         $request->setCcNo($data['cc_no']);
@@ -39,14 +46,19 @@ class RequestHelper
         $request->setMerchantKey(getenv('MERCHANT_KEY'));
         $request->setCurrencyCode(getenv('CURRENCY_CODE'));
         $request->setInvoiceDescription(getenv('INVOICE_DESCRIPTION'));
-        $request->setName($firstName);
-        $request->setSurname($lastName);
+        $request->setName(CommonHelper::nameSplit($name)['firstName']);
+        $request->setSurname(CommonHelper::nameSplit($name)['lastName']);
         $request->setTotal((float)$data['total']);
         $request->setInstallmentsNumber($data['installments_number']);
         $request->setHashKey(HashGeneratorHelper::hashGenerator((float)$data['total'], $data['installments_number']));
         $request->setInvoiceId(Session::get('invoice_id'));
     }
 
+    /**
+     * @param $request
+     * @param $data
+     * @return void
+     */
     public static function getPosRequest($request,$data)
     {
         $request->setCreditCard($data['credit_card']);

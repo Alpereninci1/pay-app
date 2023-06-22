@@ -57,10 +57,8 @@ class PaymentController extends Controller
                 $dataArray = $data->toArray();
                 $statusCode = $data->getStatusCode();
                 if ($statusCode === 100) {
-                    $expiration = Carbon::now()->addHours(5); // Token süresi 2 saat
                     Log::channel('info')->info('Token alındı.',['Token' => $token]);
                     Session::put('token',$token);
-                    Session::put('token_expiration', $expiration);
                     Session::save();
                     return $dataArray;
                 } else {
@@ -74,6 +72,11 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * @param PaymentRequest $request
+     * @return \Illuminate\Http\JsonResponse|\Psr\Http\Message\StreamInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function processPayment3d(PaymentRequest $request)
     {
         $apiUrl = getenv('BASE_URL').'paySmart3D';
@@ -112,6 +115,11 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * @param PaymentRequest $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function processPayment2d(PaymentRequest $request)
     {
         $apiUrl = getenv('BASE_URL').'paySmart2D';
@@ -153,6 +161,11 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * @param GetPosRequest $request
+     * @return \Illuminate\Http\JsonResponse|mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function getPos(GetPosRequest $request)
     {
         $this->getToken();
@@ -188,7 +201,11 @@ class PaymentController extends Controller
         }
     }
 
-
+    /**
+     * @param PaymentRequest $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse|\Psr\Http\Message\StreamInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function processPayment(PaymentRequest $request)
     {
         Session::put('is_visit',false);
