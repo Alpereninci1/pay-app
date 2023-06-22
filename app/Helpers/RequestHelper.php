@@ -63,9 +63,9 @@ class RequestHelper
     {
         $request->setCreditCard($data['credit_card']);
         $request->setAmount($data['amount']);
-        $request->setCurrencyCode(Config::get('app.currency_code'));
-        $request->setIs2d(Config::get('app.is_2d'));
-        $request->setMerchantKey(Config::get('app.merchant_key'));
+        $request->setCurrencyCode(getenv('CURRENCY_CODE'));
+        $request->setIs2d(getenv('IS_2D'));
+        $request->setMerchantKey(getenv('MERCHANT_KEY'));
 
     }
 }

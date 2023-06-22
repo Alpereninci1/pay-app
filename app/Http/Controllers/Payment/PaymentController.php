@@ -36,8 +36,8 @@ class PaymentController extends Controller
     {
         $apiUrl = getenv('BASE_URL').'token';
 
-        $this->getTokenRequest->setAppId(Config::get('app.app_id'));
-        $this->getTokenRequest->setAppSecret(Config::get('app.app_secret'));
+        $this->getTokenRequest->setAppId(getenv('APP_ID'));
+        $this->getTokenRequest->setAppSecret(getenv('APP_SECRET'));
 
         $body = $this->getTokenRequest->getTokenData();
         $client = new Client();
