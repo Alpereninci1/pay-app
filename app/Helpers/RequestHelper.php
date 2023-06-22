@@ -9,10 +9,6 @@ class RequestHelper
 {
     public static function payment3dRequest($payment3dRequest,$data)
     {
-        $payment3dRequest->setCcHolderName($data['cc_holder_name']);
-        $payment3dRequest->setCcNo($data['cc_no']);
-        $payment3dRequest->setExpiryMonth($data['expiry_month']);
-        $payment3dRequest->setExpiryYear($data['expiry_year']);
         self::extracted($payment3dRequest, $data);
         $payment3dRequest->setReturnUrl(getenv('RETURN_URL'));
         $payment3dRequest->setCancelUrl(getenv('CANCEL_URL'));
@@ -20,13 +16,8 @@ class RequestHelper
 
     public static function payment2dRequest($payment2dRequest,$data)
     {
-        $payment2dRequest->setCcHolderName($data['cc_holder_name']);
-        $payment2dRequest->setCcNo($data['cc_no']);
-        $payment2dRequest->setExpiryMonth($data['expiry_month']);
-        $payment2dRequest->setExpiryYear($data['expiry_year']);
         $payment2dRequest->setCvv($data['cvv']);
         self::extracted($payment2dRequest, $data);
-
     }
 
     /**
@@ -36,9 +27,20 @@ class RequestHelper
      */
     public static function extracted($request, $data): void
     {
+        $name = $data['name'];
+        $names = explode(' ', $name);
+        $lastName = array_pop($names);
+        $firstName = implode(' ',$names);
+
+        $request->setCcHolderName($data['cc_holder_name']);
+        $request->setCcNo($data['cc_no']);
+        $request->setExpiryMonth($data['expiry_month']);
+        $request->setExpiryYear($data['expiry_year']);
         $request->setMerchantKey(getenv('MERCHANT_KEY'));
         $request->setCurrencyCode(getenv('CURRENCY_CODE'));
         $request->setInvoiceDescription(getenv('INVOICE_DESCRIPTION'));
+        $request->setName($firstName);
+        $request->setSurname($lastName);
         $request->setTotal((float)$data['total']);
         $request->setInstallmentsNumber($data['installments_number']);
         $request->setHashKey(HashGeneratorHelper::hashGenerator((float)$data['total'], $data['installments_number']));
