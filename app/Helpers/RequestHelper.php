@@ -41,8 +41,6 @@ class RequestHelper
         $request->setInvoiceDescription(getenv('INVOICE_DESCRIPTION'));
         $request->setTotal((float)$data['total']);
         $request->setInstallmentsNumber($data['installments_number']);
-        $request->setName(Config::get('app._name'));
-        $request->setSurname(Config::get('app.surname'));
         $request->setHashKey(HashGeneratorHelper::hashGenerator((float)$data['total'], $data['installments_number']));
         $request->setInvoiceId(Session::get('invoice_id'));
     }

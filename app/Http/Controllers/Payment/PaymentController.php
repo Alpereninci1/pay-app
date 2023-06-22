@@ -80,6 +80,14 @@ class PaymentController extends Controller
 
         $validatedData = $request->validated();
         $total = (float)$validatedData['total'];
+        $name = $validatedData['name'];
+        $names = explode(' ', $name);
+
+        $lastName = array_pop($names);
+        $firstName = implode(' ',$names);
+
+        $this->payment3dRequest->setName($firstName);
+        $this->payment3dRequest->setSurname($lastName);
 
         RequestHelper::payment3dRequest($this->payment3dRequest,$validatedData);
 
@@ -119,8 +127,15 @@ class PaymentController extends Controller
 
         $validatedData = $request->validated();
         $total = (float)$validatedData['total'];
-        RequestHelper::payment2dRequest($this->payment2dRequest,$validatedData);
+        $name = $validatedData['name'];
+        $names = explode(' ', $name);
 
+        $lastName = array_pop($names);
+        $firstName = implode(' ',$names);
+
+        $this->payment2dRequest->setName($firstName);
+        $this->payment2dRequest->setSurname($lastName);
+        RequestHelper::payment2dRequest($this->payment2dRequest,$validatedData);
         $itemRequestData = $this->getItemRequestData($total);
 
         $this->payment2dRequest->setItems($itemRequestData);
