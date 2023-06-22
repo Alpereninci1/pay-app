@@ -21,7 +21,7 @@ class GetPosResponse extends BaseResponse implements IResponse
     }
 
     /**
-     * @param PosResponse[] $data
+     * @param null|PosResponse[] $data
      */
     public function setData(array $data): void
     {

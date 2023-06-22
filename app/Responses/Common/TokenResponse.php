@@ -45,7 +45,7 @@ class TokenResponse
     }
 
     /**
-     * @param bool $is_3d
+     * @param null|bool $is_3d
      */
     public function setIs3d(bool $is_3d): void
     {

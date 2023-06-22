@@ -19,14 +19,19 @@ class GetTokenMapper implements IMapper
 
         $getTokenResponse->setStatusCode($responseData['status_code']);
         $getTokenResponse->setStatusDescription($responseData['status_description']);
-
         $tokenResponse = new TokenResponse();
-        $tokenResponse->setToken($responseData['data']['token']);
-        $tokenResponse->setExpiredAt($responseData['data']['expires_at']);
-        $tokenResponse->setIs3d($responseData['data']['is_3d']);
-
-        $getTokenResponse->setData($tokenResponse);
+        if($getTokenResponse->getStatusCode() === 100)
+        {
+            $tokenResponse->setToken($responseData['data']['token']);
+            $tokenResponse->setExpiredAt($responseData['data']['expires_at']);
+            $tokenResponse->setIs3d($responseData['data']['is_3d']);
+            $getTokenResponse->setData($tokenResponse);
+        }
+        else {
+            $getTokenResponse->setData(null);
+        }
 
         return $getTokenResponse;
+
     }
 }

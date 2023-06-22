@@ -21,7 +21,7 @@ class GetPayment2dResponse extends BaseResponse implements IResponse
     }
 
     /**
-     * @param Payment2dResponse $data
+     * @param null|Payment2dResponse $data
      */
     public function setData(Payment2dResponse $data): void
     {

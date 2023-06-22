@@ -20,7 +20,7 @@ class GetTokenResponse extends BaseResponse implements IResponse
     }
 
     /**
-     * @param TokenResponse $data
+     * @param null|TokenResponse $data
      */
     public function setData(TokenResponse $data): void
     {
